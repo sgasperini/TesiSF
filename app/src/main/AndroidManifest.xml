@@ -2,20 +2,30 @@
 <manifest package="unibo.progettotesi"
           xmlns:android="http://schemas.android.com/apk/res/android">
 
+<<<<<<< HEAD
+=======
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+
+>>>>>>> masterhv
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+<<<<<<< HEAD
 
         <activity android:name=".MainActivity">
+=======
+        <activity android:name=".activities.MainActivity">
+>>>>>>> masterhv
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+<<<<<<< HEAD
         <activity android:name=".NewProfileActivityB">
         </activity>
         <activity android:name=".FavoritesProfileB">
@@ -23,6 +33,17 @@
         <activity android:name=".AddressProfileB">
         </activity>
         <activity android:name=".DistanceB">
+=======
+        <activity android:name=".activities.NewProfileActivityB">
+        </activity>
+        <activity android:name=".activities.FavoritesProfileB">
+        </activity>
+        <activity android:name=".activities.AddressProfileB">
+        </activity>
+        <activity android:name=".activities.DistanceB">
+        </activity>
+        <activity android:name=".activities.StartTripActivityB">
+>>>>>>> masterhv
         </activity>
     </application>
 

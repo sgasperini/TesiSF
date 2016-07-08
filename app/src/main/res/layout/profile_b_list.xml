@@ -9,44 +9,38 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-<<<<<<< HEAD
-        android:text="Large Text"
-        android:id="@+id/textView"
-=======
-        android:text="Nome Preferito"
-        android:id="@+id/nameFavorite"
->>>>>>> masterhv
+        android:text="Nome Profilo"
+        android:id="@+id/name"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:textSize="32dp"
-<<<<<<< HEAD
-        android:layout_marginLeft="10dp"/>
-=======
         android:layout_marginLeft="10dp"
         android:singleLine="true"/>
->>>>>>> masterhv
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-<<<<<<< HEAD
-        android:text="Medium Text"
-        android:id="@+id/textView2"
-        android:layout_below="@+id/textView"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginRight="10dp"
-        android:layout_marginTop="10dp"/>
-=======
-        android:text="Luogo"
-        android:id="@+id/placeFavorite"
-        android:layout_below="@+id/nameFavorite"
+        android:text="Partenza"
+        android:id="@+id/startPlace"
+        android:layout_below="@+id/name"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="5dp"
         android:layout_marginRight="5dp"
         android:singleLine="true"/>
->>>>>>> masterhv
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Arrivo"
+        android:id="@+id/endPlace"
+        android:layout_below="@+id/startPlace"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="5dp"
+        android:singleLine="true"/>
 </RelativeLayout>
