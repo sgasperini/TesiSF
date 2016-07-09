@@ -1,6 +1,7 @@
 package unibo.progettotesi.model;
 
 import java.util.List;
+import java.util.StringTokenizer;
 
 public class Place {
 	private Location location;
@@ -21,6 +22,16 @@ public class Place {
 		this.name = name;
 	}
 
+	public Place(Location location, int walking) {
+		this.walking = walking;
+		this.location = location;
+	}
+
+	public Place(Location location) {
+		this.walking = 5;
+		this.location = location;
+	}
+
 	public Location getLocation() {
 		return location;
 	}
@@ -37,4 +48,38 @@ public class Place {
 		this.stops = stops;
 	}
 
+	public int getWalking() {
+		return walking;
+	}
+
+	public void setWalking(int walking) {
+		this.walking = walking;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String savingString(){
+		return location.savingString() + "_____" + walking;
+	}
+
+	public String savingStringFavorite(){
+		return location.savingString() + "_____" + walking + "_____" + name;
+	}
+
+	public static Place getPlaceFromString(String saved){
+		StringTokenizer stringTokenizer = new StringTokenizer(saved, "_____");
+		String uno = stringTokenizer.nextToken();
+		return new Place (Location.getLocationFromString(uno), Integer.parseInt(stringTokenizer.nextToken()));
+	}
+
+	public static Place getFavoritePlaceFromString(String saved){
+		StringTokenizer stringTokenizer = new StringTokenizer(saved, "_____");
+		return new Place (Location.getLocationFromString(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken()), stringTokenizer.nextToken());
+	}
 }

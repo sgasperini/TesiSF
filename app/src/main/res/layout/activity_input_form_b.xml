@@ -8,67 +8,40 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-<<<<<<< HEAD
-    tools:context="unibo.progettotesi.AddressProfileB"
-=======
-    tools:context=".activities.AddressProfileB"
->>>>>>> masterhv
-    >
+    tools:context=".activities.InputFormB"
+    android:onClick="confirmInput">
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-<<<<<<< HEAD
-        android:id="@+id/editText"
-        android:layout_centerHorizontal="true"
-        android:textSize="48dp"
-        android:layout_above="@+id/imageButton7"
-=======
-        android:id="@+id/distanceEditText"
+        android:id="@+id/inputEditText"
         android:layout_centerHorizontal="true"
         android:textSize="48dp"
         android:layout_above="@+id/confirmDistance"
->>>>>>> masterhv
         android:hint="Quanti minuti sei disposto a camminare?"
         android:textColorHint="#00695c"
         android:singleLine="false"
         android:inputType="textMultiLine"
         android:lines="8"
         android:minLines="6"
-<<<<<<< HEAD
-        android:gravity="bottom|left"
-=======
->>>>>>> masterhv
         android:maxLines="10"
         android:scrollbars="vertical"
         android:background="#26a69a"
         android:numeric="integer"
-<<<<<<< HEAD
+        android:gravity="left"
         android:layout_alignParentTop="true"/>
-=======
-        android:layout_alignParentTop="true"
-        android:gravity="left"/>
->>>>>>> masterhv
 
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-<<<<<<< HEAD
-        android:id="@+id/imageButton7"
-=======
         android:id="@+id/confirmDistance"
->>>>>>> masterhv
         android:src="@drawable/ic_done_black_24dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-<<<<<<< HEAD
-        android:onClick="setAddress"
-=======
-        android:onClick="setDistance"
->>>>>>> masterhv
+        android:onClick="confirmInput"
         style="?android:attr/borderlessButtonStyle"
         android:background="#00897b"
         android:layout_marginTop="20dp"/>

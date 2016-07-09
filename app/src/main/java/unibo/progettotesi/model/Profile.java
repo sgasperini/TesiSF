@@ -34,4 +34,8 @@ public class Profile {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+	public String savingString(){
+		return start.savingString() + "*+*+*" + end.savingString() + "*+*+*" + name;
+	}
 }

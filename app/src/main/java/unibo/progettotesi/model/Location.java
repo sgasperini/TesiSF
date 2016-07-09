@@ -4,6 +4,8 @@ import android.location.Geocoder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
+
 import android.location.Address;
 
 public class Location {
@@ -42,5 +44,12 @@ public class Location {
 		this.longitude = longitude;
 	}
 
+	public String savingString(){
+		return latitude + "+++" + longitude + "+++" + address;
+	}
 
+	public static Location getLocationFromString(String saved) {
+		StringTokenizer stringTokenizer = new StringTokenizer(saved, "+++");
+		return new Location(Double.parseDouble(stringTokenizer.nextToken()), Double.parseDouble(stringTokenizer.nextToken()), stringTokenizer.nextToken());
+	}
 }
