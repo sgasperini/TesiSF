@@ -1,5 +1,7 @@
 package unibo.progettotesi.model;
 
+import java.util.StringTokenizer;
+
 public class Profile {
 	private Place start;
 	private Place end;
@@ -36,6 +38,11 @@ public class Profile {
 	}
 
 	public String savingString(){
-		return start.savingString() + "*+*+*" + end.savingString() + "*+*+*" + name;
+		return start.savingString() + "∫" + end.savingString() + "∫" + name;
+	}
+
+	public static Profile getProfileFromString(String saved){
+		StringTokenizer stringTokenizer = new StringTokenizer(saved, "∫");
+		return new Profile (Place.getPlaceFromString(stringTokenizer.nextToken()), Place.getPlaceFromString(stringTokenizer.nextToken()), stringTokenizer.nextToken());
 	}
 }

@@ -5,11 +5,11 @@ import android.os.Bundle;
 
 import unibo.progettotesi.R;
 
-public class StartTripActivityB extends Activity {
+public class OnTheGoActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_start_trip_activity_b);
+		setContentView(R.layout.activity_on_the_go);
 	}
 }

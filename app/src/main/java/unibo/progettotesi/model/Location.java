@@ -45,11 +45,11 @@ public class Location {
 	}
 
 	public String savingString(){
-		return latitude + "+++" + longitude + "+++" + address;
+		return latitude + "ø" + longitude + "ø" + address;
 	}
 
 	public static Location getLocationFromString(String saved) {
-		StringTokenizer stringTokenizer = new StringTokenizer(saved, "+++");
+		StringTokenizer stringTokenizer = new StringTokenizer(saved, "ø");
 		return new Location(Double.parseDouble(stringTokenizer.nextToken()), Double.parseDouble(stringTokenizer.nextToken()), stringTokenizer.nextToken());
 	}
 }

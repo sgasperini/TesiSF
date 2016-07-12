@@ -48,16 +48,20 @@ public class InputFormB extends AppCompatActivity {
 		editText = (EditText) findViewById(R.id.inputEditText);
 		if(distance){
 			editText.setHint(Constants.DISTANCE_INPUT_HINT);
-			this.setTitle("Set Distance");
+			this.setTitle("Distanza");
 		}else if(address){
 			latitude = 0;
 			longitude = 0;
 			editText.setHint(Constants.ADDRESS_INPUT_HINT);
-			this.setTitle("Set Address");
+			this.setTitle("Indirizzo");
 		}else if(name){
-			editText.setHint(Constants.NAME_FAVORITE_INPUT_HINT);
-			this.setTitle("Set Name");
+			if(favorite)
+				editText.setHint(Constants.NAME_FAVORITE_INPUT_HINT);
+			else
+				editText.setHint(Constants.NAME_PROFILE_INPUT_HINT);
+			this.setTitle("Nome");
 		}
+		editText.setTextSize(36);
 	}
 
 	public void confirmInput(View v){
@@ -71,26 +75,28 @@ public class InputFormB extends AppCompatActivity {
 	}
 
 	private void setName() {
-		if(!favorite)
+		if(!favorite) {
 			NewProfileActivityB.saveProfile(this, editText.getText().toString());
+			finish();
+		}else {
+			SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+			SharedPreferences.Editor editor = preferences.edit();
 
-		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		SharedPreferences.Editor editor = preferences.edit();
+			int numFavorites = preferences.getInt("NumFavorites", 0) + 1;
+			Place place;
+			if (start)
+				place = Place.getPlaceFromString(preferences.getString("StartTempPlace", ""));
+			else
+				place = Place.getPlaceFromString(preferences.getString("EndTempPlace", ""));
+			place.setName(editText.getText().toString());
 
-		int numFavorites = preferences.getInt("NumFavorites", 0) + 1;
-		Place place;
-		if(start)
-			place = Place.getPlaceFromString(preferences.getString("StartTempPlace", ""));
-		else
-			place = Place.getPlaceFromString(preferences.getString("EndTempPlace", ""));
-		place.setName(editText.getText().toString());
+			editor.putString("FavoriteN_" + numFavorites, place.savingStringFavorite());
+			editor.putInt("NumFavorites", numFavorites);
 
-		editor.putString("FavoriteN_" + numFavorites, place.savingStringFavorite());
-		editor.putInt("NumFavorites", numFavorites);
+			editor.commit();
 
-		editor.commit();
-
-		continueProfileCreation(null, false);
+			continueProfileCreation(null, false);
+		}
 	}
 
 	//set OnKeyListener sull'EditText
@@ -158,12 +164,13 @@ public class InputFormB extends AppCompatActivity {
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 		SharedPreferences.Editor editor = preferences.edit();
 
-		Place place;
+		Location location;
 		if(start)
-			place = Place.getPlaceFromString(preferences.getString("StartTempPlace", ""));
+			location = Location.getLocationFromString(preferences.getString("StartLocation", ""));
 		else
-			place = Place.getPlaceFromString(preferences.getString("EndTempPlace", ""));
+			location = Location.getLocationFromString(preferences.getString("EndLocation", ""));
 
+		Place place = new Place(location);
 		place.setWalking(walking);
 
 		if(start)
@@ -204,7 +211,7 @@ public class InputFormB extends AppCompatActivity {
 		intent.putExtra("Name", true);
 		intent.putExtra("Favorite", forFavorite);
 		startActivity(intent);
-		//finish();
+		finish();
 	}
 
 	private void continueProfileCreation(DialogInterface dialog, boolean savingFavorite){
@@ -218,7 +225,7 @@ public class InputFormB extends AppCompatActivity {
 		}
 		if(dialog != null)
 			dialog.cancel();
-		//finish();
+		finish();
 	}
 
 

@@ -7,4 +7,5 @@ public class Constants {
 	public static final String DISTANCE_INPUT_HINT = "Quanto sei disposto a camminare?";
 	public static final String ADDRESS_INPUT_HINT = "Immettere indirizzo";
 	public static final String NAME_FAVORITE_INPUT_HINT = "Immettere nome preferito";
+	public static final String NAME_PROFILE_INPUT_HINT = "Immettere nome profilo";
 }

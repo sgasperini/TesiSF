@@ -10,7 +10,6 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -24,7 +23,15 @@
         </activity>
         <activity android:name=".activities.InputFormB">
         </activity>
-        <activity android:name=".activities.StartTripActivityB">
+        <activity android:name=".activities.NewTripActivityB">
+        </activity>
+        <activity android:name=".activities.SelectRouteActivityB">
+        </activity>
+        <activity android:name=".activities.BusWaitingActivity">
+        </activity>
+        <activity android:name=".activities.OnTheGoActivity">
+        </activity>
+        <activity android:name=".activities.DestinationActivityB">
         </activity>
     </application>
 

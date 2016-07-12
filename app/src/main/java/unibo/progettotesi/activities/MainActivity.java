@@ -20,4 +20,10 @@ public class MainActivity extends AppCompatActivity {
 		intent.putExtra("Start", true);
 		startActivity(intent);
 	}
+
+	public void newTrip(View v){
+		Intent intent = new Intent(this, NewTripActivityB.class);
+
+		startActivity(intent);
+	}
 }

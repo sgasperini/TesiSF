@@ -40,6 +40,11 @@ public class NewProfileActivityB extends AppCompatActivity {
 		//se è stato usato per la partenza il gps levalo
 		if(gpsStart)
 			findViewById(R.id.gps).setVisibility(View.GONE);
+
+		if(start)
+			this.setTitle("Partenza");
+		else
+			this.setTitle("Destinazione");
 	}
 
 	public void gpsClick(View v){
@@ -120,9 +125,9 @@ public class NewProfileActivityB extends AppCompatActivity {
 		SharedPreferences.Editor editor = preferences.edit();
 
 		if(start)
-			editor.putString("StartTempPlace", place.savingString());
+			editor.putString("StartLocation", location.savingString());
 		else
-			editor.putString("EndTempPlace", place.savingString());
+			editor.putString("EndLocation", location.savingString());
 
 		editor.commit();
 	}
@@ -131,12 +136,13 @@ public class NewProfileActivityB extends AppCompatActivity {
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
 		SharedPreferences.Editor editor = preferences.edit();
 
-		int numProfiles = preferences.getInt("NumProfiles", 0);
+		int numProfiles = preferences.getInt("NumProfiles", 0) + 1;
 		Place placeStart = Place.getPlaceFromString(preferences.getString("StartTempPlace", ""));
 		Place placeEnd = Place.getPlaceFromString(preferences.getString("EndTempPlace", ""));
 
 		Profile profile = new Profile(placeStart, placeEnd, profileName);
 		editor.putString("ProfileN_" + numProfiles, profile.savingString());
+		editor.putInt("NumProfiles", numProfiles);
 
 		editor.commit();
 	}

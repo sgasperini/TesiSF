@@ -65,21 +65,21 @@ public class Place {
 	}
 
 	public String savingString(){
-		return location.savingString() + "_____" + walking;
+		return location.savingString() + "∆" + walking;
 	}
 
 	public String savingStringFavorite(){
-		return location.savingString() + "_____" + walking + "_____" + name;
+		return location.savingString() + "∆" + walking + "∆" + name;
 	}
 
 	public static Place getPlaceFromString(String saved){
-		StringTokenizer stringTokenizer = new StringTokenizer(saved, "_____");
+		StringTokenizer stringTokenizer = new StringTokenizer(saved, "∆");
 		String uno = stringTokenizer.nextToken();
 		return new Place (Location.getLocationFromString(uno), Integer.parseInt(stringTokenizer.nextToken()));
 	}
 
 	public static Place getFavoritePlaceFromString(String saved){
-		StringTokenizer stringTokenizer = new StringTokenizer(saved, "_____");
+		StringTokenizer stringTokenizer = new StringTokenizer(saved, "∆");
 		return new Place (Location.getLocationFromString(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken()), stringTokenizer.nextToken());
 	}
 }

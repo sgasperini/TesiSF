@@ -74,7 +74,8 @@
             android:src="@drawable/ic_directions_bus_black_48dp"
             android:scaleType="center"
             android:background="#00897b"
-            android:contentDescription="Inizia il tuo viaggio"/>
+            android:contentDescription="Inizia il tuo viaggio"
+            android:onClick="newTrip"/>
     </GridLayout>
 
 </RelativeLayout>
