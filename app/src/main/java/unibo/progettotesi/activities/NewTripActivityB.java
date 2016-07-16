@@ -25,13 +25,13 @@ public class NewTripActivityB extends AppCompatActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_list_b);
+		setContentView(R.layout.start_trip_activity_b);
 
 		List<Profile> profileList = getProfiles();
 
 		profilesAdapter = new ProfilesAdapter(this, R.layout.profile_b_list, profileList);
 
-		((ListView) findViewById(R.id.listView)).setAdapter(profilesAdapter);
+		((ListView) findViewById(R.id.listView2)).setAdapter(profilesAdapter);
 	}
 
 	private List<Profile> getProfiles() {
@@ -45,9 +45,18 @@ public class NewTripActivityB extends AppCompatActivity {
 		return output;
 	}
 
-	public static void selectProfile(){
+	public static void selectProfile(NewTripActivityB newTripActivityB, Profile profile){
 		//leggere ad alta voce il nome
 		//conferma
+		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(newTripActivityB);
+		SharedPreferences.Editor editor = sharedPreferences.edit();
 
+		editor.putString("CurrentProfile", profile.savingString());
+		editor.commit();
+
+		Intent intent = new Intent(newTripActivityB, SelectRouteActivityB.class);
+		newTripActivityB.startActivity(intent);
+
+		newTripActivityB.finish();
 	}
 }

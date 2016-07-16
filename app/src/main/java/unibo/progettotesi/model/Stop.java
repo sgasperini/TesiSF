@@ -2,6 +2,7 @@ package unibo.progettotesi.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 public class Stop {
 	private String name;
@@ -16,6 +17,15 @@ public class Stop {
 		this.location = location;
 		this.code = code;
 		this.name = name;
+		this.sisters = new ArrayList<Stop>();
+		this.lines = new ArrayList<Line>();
+	}
+
+	public Stop(Location location, int code, String name, String site) {
+		this.location = location;
+		this.code = code;
+		this.name = name;
+		this.site = site;
 		this.sisters = new ArrayList<Stop>();
 		this.lines = new ArrayList<Line>();
 	}
@@ -82,5 +92,14 @@ public class Stop {
 
 	public void setLocation(Location location) {
 		this.location = location;
+	}
+
+	public String savingString() {
+		return location.savingString() + "®" + code + "®" + name + "®" + site;
+	}
+
+	public static Stop getStopFromString(String saved){
+		StringTokenizer stringTokenizer = new StringTokenizer(saved, "®");
+		return new Stop(Location.getLocationFromString(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken()), stringTokenizer.nextToken(), stringTokenizer.nextToken());
 	}
 }

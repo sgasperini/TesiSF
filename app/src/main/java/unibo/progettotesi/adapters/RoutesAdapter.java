@@ -14,19 +14,22 @@ import java.util.List;
 import unibo.progettotesi.R;
 import unibo.progettotesi.activities.FavoritesProfileB;
 import unibo.progettotesi.activities.NewTripActivityB;
+import unibo.progettotesi.activities.SelectRouteActivityB;
 import unibo.progettotesi.model.Place;
 import unibo.progettotesi.model.Profile;
+import unibo.progettotesi.model.Route;
+import unibo.progettotesi.utilities.Filler;
+import unibo.progettotesi.utilities.Time;
 
 
-public class ProfilesAdapter extends ArrayAdapter<Profile> {
+public class RoutesAdapter extends ArrayAdapter<Route> {
 	private int resource;
-	private NewTripActivityB newTripActivityB;
-	private boolean start;
+	private SelectRouteActivityB selectRouteActivityB;
 
-	public ProfilesAdapter(NewTripActivityB newTripActivityB, int _resource, List<Profile> items) {
-		super((Context) newTripActivityB, _resource, items);
+	public RoutesAdapter(SelectRouteActivityB selectRouteActivityB, int _resource, List<Route> items) {
+		super((Context) selectRouteActivityB, _resource, items);
 		resource = _resource;
-		this.newTripActivityB = newTripActivityB;
+		this.selectRouteActivityB = selectRouteActivityB;
 	}
 
 	@Override
@@ -34,7 +37,7 @@ public class ProfilesAdapter extends ArrayAdapter<Profile> {
 		final LinearLayout newView;
 		final int pos = position;
 
-		final Profile profile = getItem(position);
+		final Route route = getItem(position);
 
 		if (convertView == null) {
 			newView = new LinearLayout(getContext());
@@ -45,22 +48,7 @@ public class ProfilesAdapter extends ArrayAdapter<Profile> {
 			newView = (LinearLayout) convertView;
 		}
 
-		TextView name = (TextView) newView.findViewById(R.id.nameProfile);
-		TextView start = (TextView) newView.findViewById(R.id.startPlace);
-		TextView end = (TextView) newView.findViewById(R.id.endPlace);
-
-		RelativeLayout relativeLayout = (RelativeLayout) newView.findViewById(R.id.profile_list_layout);
-
-		relativeLayout.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				NewTripActivityB.selectProfile(newTripActivityB, profile);
-			}
-		});
-
-		name.setText(profile.getName());
-		start.setText(profile.getStart().getLocation().getAddress());
-		end.setText(profile.getEnd().getLocation().getAddress());
+		Filler.fillRoute(newView, route, selectRouteActivityB);
 
 		return newView;
 	}

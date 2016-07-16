@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Nome Fermata"
-        android:id="@+id/textView21"
+        android:id="@+id/endStop_dest"
         android:layout_below="@+id/textView20"
         android:layout_centerHorizontal="true"
         android:textSize="36dp"
@@ -36,7 +36,7 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Cammina"
         android:id="@+id/textView22"
-        android:layout_below="@+id/textView21"
+        android:layout_below="@+id/endStop_dest"
         android:layout_centerHorizontal="true"/>
 
     <TextView
@@ -44,7 +44,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="# metri"
-        android:id="@+id/textView23"
+        android:id="@+id/walking_dest"
         android:layout_below="@+id/textView22"
         android:layout_centerHorizontal="true"/>
 
@@ -54,7 +54,7 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="per arrivare a"
         android:id="@+id/textView24"
-        android:layout_below="@+id/textView23"
+        android:layout_below="@+id/walking_dest"
         android:layout_centerHorizontal="true"/>
 
     <TextView
@@ -62,7 +62,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Preferito/Indirizzo"
-        android:id="@+id/textView25"
+        android:id="@+id/destination_dest"
         android:layout_below="@+id/textView24"
         android:layout_centerHorizontal="true"
         android:gravity="center_horizontal"

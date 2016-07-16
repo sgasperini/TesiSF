@@ -33,7 +33,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_new_profile_activity_b);
+		setContentView(R.layout.new_profile_activity_b);
 
 		start = getIntent().getBooleanExtra("Start", false);
 		gpsStart = getIntent().getBooleanExtra("GPS", false);

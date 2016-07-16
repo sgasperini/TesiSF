@@ -13,11 +13,12 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
         <ImageButton
             android:layout_width="match_parent"
-            android:layout_height="160dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:id="@+id/gps"
             android:text="GPS"
             android:src="@drawable/ic_location_on_black_48dp"
@@ -28,7 +29,8 @@
 
         <ImageButton
             android:layout_width="match_parent"
-            android:layout_height="160dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:id="@+id/preferiti"
             android:text="Preferiti"
             android:src="@drawable/ic_favorite_black_48dp"
@@ -39,7 +41,8 @@
 
         <ImageButton
             android:layout_width="match_parent"
-            android:layout_height="160dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:id="@+id/indirizzo"
             android:text="Indirizzo"
             android:src="@drawable/ic_location_city_black_48dp"

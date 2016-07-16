@@ -17,15 +17,15 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:id="@+id/include"/>
+        android:id="@+id/route_otg"/>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
         android:id="@+id/scrollView2"
-        android:layout_below="@+id/include"
+        android:layout_below="@+id/route_otg"
         android:layout_centerHorizontal="true"
-        android:layout_above="@+id/imageButton7"
+        android:layout_above="@+id/getOff_otg"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp">
 
@@ -36,7 +36,7 @@
             android:layout_alignTop="@+id/scrollView2"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:layout_above="@+id/imageButton7"
+            android:layout_above="@+id/getOff_otg"
             >
 
             <TextView
@@ -44,7 +44,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="Linea #"
-                android:id="@+id/textView16"
+                android:id="@+id/line_otg"
                 android:layout_gravity="center_horizontal"
                 android:textSize="36dp"/>
 
@@ -53,7 +53,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="Fermata Precedente"
-                android:id="@+id/textView13"
+                android:id="@+id/previousStop_otg"
                 android:layout_gravity="center_horizontal"/>
 
             <TextView
@@ -61,7 +61,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="Distanza in m"
-                android:id="@+id/textView14"
+                android:id="@+id/distance_otg"
                 android:layout_gravity="center_horizontal"/>
 
             <TextView
@@ -69,7 +69,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="Fermata Successiva"
-                android:id="@+id/textView15"
+                android:id="@+id/nextStop_otg"
                 android:layout_gravity="center_horizontal"/>
 
             <TextView
@@ -77,7 +77,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="Fermate da fare"
-                android:id="@+id/textView17"
+                android:id="@+id/stopsToCome_otg"
                 android:layout_gravity="center_horizontal"/>
 
             <TextView
@@ -85,7 +85,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="Minuti a scendere"
-                android:id="@+id/textView19"
+                android:id="@+id/minutesToGo_otg"
                 android:layout_gravity="center_horizontal"/>
 
             <TextView
@@ -93,7 +93,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="Tempo Rimanente del viaggio"
-                android:id="@+id/textView18"
+                android:id="@+id/timeToFinalDestination_otg"
                 android:layout_gravity="center_horizontal"/>
 
         </LinearLayout>
@@ -103,9 +103,9 @@
         style="?android:attr/borderlessButtonStyle"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:id="@+id/imageButton7"
+        android:id="@+id/getOff_otg"
         android:src="@drawable/ic_directions_bus_black_48dp"
-        android:onClick="confirmInput"
+        android:onClick="getOff"
         android:background="#00897b"
         android:scaleType="fitCenter"
         android:layout_alignParentBottom="true"

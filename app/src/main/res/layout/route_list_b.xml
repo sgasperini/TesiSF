@@ -2,21 +2,22 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
               android:layout_width="match_parent"
-              android:layout_height="match_parent">
+              android:layout_height="match_parent"
+                android:id="@+id/layout_route">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Orario Partenza - Arrivo"
-        android:id="@+id/textView"/>
+        android:id="@+id/times_route"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Tempo"
-        android:id="@+id/textView2"
+        android:id="@+id/duration_route"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"/>
@@ -26,29 +27,30 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Fermata Partenza"
-        android:id="@+id/textView3"
-        android:layout_below="@+id/textView"
+        android:id="@+id/startStop_route"
+        android:layout_marginLeft="10dp"
+        android:layout_below="@+id/times_route"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginLeft="10dp"/>
+        />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Linea/e"
-        android:id="@+id/textView4"
-        android:layout_below="@+id/textView3"
-        android:layout_alignLeft="@+id/textView3"
-        android:layout_alignStart="@+id/textView3"/>
+        android:id="@+id/lines_route"
+        android:layout_below="@+id/startStop_route"
+        android:layout_alignLeft="@+id/startStop_route"
+        android:layout_alignStart="@+id/startStop_route"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Fermata Arrivo"
-        android:id="@+id/textView5"
-        android:layout_below="@+id/textView4"
-        android:layout_alignLeft="@+id/textView4"
-        android:layout_alignStart="@+id/textView4"/>
+        android:id="@+id/endStop_route"
+        android:layout_below="@+id/lines_route"
+        android:layout_alignLeft="@+id/lines_route"
+        android:layout_alignStart="@+id/lines_route"/>
 </RelativeLayout>
