@@ -21,6 +21,10 @@ public class Time {
 		return hourS + ":" + minuteS;
 	}
 
+	public String toString12(){
+		return (hour > 12 ? hour - 12 : (hour == 0 ? 12 :hourS)) + ":" + minuteS + (hour >= 12 ? "PM" : "AM");
+	}
+
 
 	public int getHour() {
 		return hour;
