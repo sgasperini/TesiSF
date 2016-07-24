@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import unibo.progettotesi.utilities.Time;
+
 public class Stop {
 	private String name;
 	private List<Line> lines;
@@ -12,11 +14,21 @@ public class Stop {
 	private String site;
 	private String municipality;
 	private Location location;
+	private Time departureTime;
 
 	public Stop(Location location, int code, String name) {
 		this.location = location;
 		this.code = code;
 		this.name = name;
+		this.sisters = new ArrayList<Stop>();
+		this.lines = new ArrayList<Line>();
+	}
+
+	public Stop(Location location, int code, String name, Time departureTime) {
+		this.location = location;
+		this.code = code;
+		this.name = name;
+		this.departureTime = departureTime;
 		this.sisters = new ArrayList<Stop>();
 		this.lines = new ArrayList<Line>();
 	}
@@ -28,6 +40,14 @@ public class Stop {
 		this.site = site;
 		this.sisters = new ArrayList<Stop>();
 		this.lines = new ArrayList<Line>();
+	}
+
+	public Time getDepartureTime() {
+		return departureTime;
+	}
+
+	public void setDepartureTime(Time departureTime) {
+		this.departureTime = departureTime;
 	}
 
 	public String getName() {

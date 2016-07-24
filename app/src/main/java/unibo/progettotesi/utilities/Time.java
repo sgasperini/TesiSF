@@ -17,6 +17,14 @@ public class Time {
 		this.minuteS = createMinuteS();
 	}
 
+	public Time(String timeS) {
+		StringTokenizer stringTokenizer = new StringTokenizer(timeS, ":");
+		this.hour = Integer.parseInt(stringTokenizer.nextToken());
+		this.minute = Integer.parseInt(stringTokenizer.nextToken());
+		this.hourS = createHourS();
+		this.minuteS = createMinuteS();
+	}
+
 	public String toString(){
 		return hourS + ":" + minuteS;
 	}
@@ -67,7 +75,7 @@ public class Time {
 	}
 
 	public static int getDifference(Time startTime, Time endTime) {
-		return 0/**/;
+		return endTime.minute - startTime.minute + 60 * (endTime.hour - startTime.hour);
 	}
 
 	public String savingString() {

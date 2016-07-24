@@ -29,6 +29,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 	private String address;
 	private Location location;
 	private Place place;
+	private LocationToolbox locationToolbox;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +50,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 
 	public void gpsClick(View v){
 		// verificare sia attivo (accenderlo), prendere la posizione e mostrarla come indirizzo chiedendo se si vuol salvare come preferito, comunque sia chiedere la distanza a piedi, poi chiamare la nuova activity
-		LocationToolbox locationToolbox = new LocationToolbox(getApplicationContext());
+		locationToolbox = new LocationToolbox(getApplicationContext());
 		latitude = locationToolbox.getLatitude();
 		longitude = locationToolbox.getLongitude();
 		coordinatesToAddress();
@@ -101,6 +102,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 						startActivity(intent);
 						dialog.cancel();
 						saveLocation();
+						locationToolbox.stopUsingGPS();
 						finish();
 					}
 				})
