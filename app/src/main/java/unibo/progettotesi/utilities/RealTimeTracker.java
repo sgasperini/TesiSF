@@ -5,7 +5,9 @@ import android.location.Geocoder;
 import android.util.Log;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -14,6 +16,7 @@ import retrofit2.Callback;
 import retrofit2.GsonConverterFactory;
 import retrofit2.Retrofit;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
 import unibo.progettotesi.activities.OnTheGoActivity;
@@ -21,6 +24,9 @@ import unibo.progettotesi.json.getNextTripsRequest.Date;
 import unibo.progettotesi.json.getNextTripsRequest.Request;
 import unibo.progettotesi.json.getNextTripsRequest.Time;
 import unibo.progettotesi.json.getNextTripsResponse.Response;
+import unibo.progettotesi.json.planner.From;
+import unibo.progettotesi.json.planner.StopId;
+import unibo.progettotesi.json.planner.To;
 import unibo.progettotesi.model.Leg;
 import unibo.progettotesi.model.Line;
 import unibo.progettotesi.model.Location;
@@ -29,6 +35,8 @@ import unibo.progettotesi.model.Stop;
 public class RealTimeTracker {
 	private OnTheGoActivity onTheGoActivity;
 	private Leg currentLeg;
+
+
 
 	public static void setDistanceTo(TextView textView, Stop stop){
 		textView.setText(500 + "");
@@ -101,15 +109,53 @@ public class RealTimeTracker {
 		onTheGoActivity.setNewLeg(currentLeg);
 	}
 
+	public static void calculateDistances(OnTheGoActivity onTheGoActivity, android.location.Location location, Location locationS0, Location locationS1) {
+		calculateDistance(onTheGoActivity, location, locationS0, true);
+		calculateDistance(onTheGoActivity, location, locationS1, false);
+	}
+
+	private static void calculateDistance(final OnTheGoActivity onTheGoActivity, android.location.Location location, Location locationS, final boolean next) {
+		Retrofit retrofit = new Retrofit.Builder()      //create the retrofit builder
+				.baseUrl(Constants.PLANNING_BASE_URL)
+				.addConverterFactory(GsonConverterFactory.create())	//parse Gson string
+				.build();
+
+		RequestPlan service = retrofit.create(RequestPlan.class);
+
+		Call<List<unibo.progettotesi.json.planner.Response>> queryResponseCall = service.requestPlan(
+				location.getLatitude() + "," + location.getLongitude(),
+				locationS.getLatitude() + "," + locationS.getLongitude(),
+				new SimpleDateFormat("MM/dd/yyyy").format(Calendar.getInstance().getTime()),
+				unibo.progettotesi.utilities.Time.now() + "00", "CAR", "fastest", 1);
+
+		queryResponseCall.enqueue(new Callback<List<unibo.progettotesi.json.planner.Response>>(){
+
+			@Override
+			public void onResponse(retrofit2.Response<List<unibo.progettotesi.json.planner.Response>> response) {
+				try{
+					if(response.body() != null /**/)
+						setDistance(onTheGoActivity, response.body().get(0).getLeg().get(0).getLength(), next);
+				}catch (Exception e){
+					e.printStackTrace();
+				}
+			}
+
+			@Override
+			public void onFailure(Throwable t) {
+				t.printStackTrace();
+			}
+		});
+	}
+
+	private static void setDistance(OnTheGoActivity onTheGoActivity, double d, boolean next) {
+		if(next)
+			onTheGoActivity.setRoadd0((int) d);
+		else
+			onTheGoActivity.setRoadd1((int) d);
+	}
+
 	public interface RequestStops {
 		@POST("getNextTrips")
-		/*Call<Response> requestStops(@Query("date") Date date,
-									 @Query("direction_id") int directionID,
-									 @Query("route_id") String routeID,
-									 @Query("start_stop_id") String startStopID,
-									 @Query("max_trips") int maxTrips,
-									 @Query("end_stop_id") String endStopID,
-									 @Query("time") Time time);*/
 
 		Call<Response> requestStops(@Body Request request);
 	}
@@ -124,6 +170,17 @@ public class RealTimeTracker {
 			e.printStackTrace();
 			return "";
 		}
+	}
+
+	public interface RequestPlan {
+		@GET("bologna/rest/plan")
+		Call<List<unibo.progettotesi.json.planner.Response>> requestPlan(@Query("from") String from,
+																	@Query("to") String to,
+																	@Query("date") String date,
+																	@Query("departureTime") String departureTime,
+																	@Query("transportType") String transportType,
+																	@Query("routeType") String routeType,
+																	@Query("numOfItn") int numOfItn);
 	}
 
 }

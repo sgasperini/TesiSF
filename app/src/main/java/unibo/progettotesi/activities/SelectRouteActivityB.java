@@ -33,12 +33,9 @@ public class SelectRouteActivityB extends Activity {
 		profile = Profile.getProfileFromString(sharedPreferences.getString("CurrentProfile", ""));
 
 		routeFinder = new RouteFinder(profile.getStart(), profile.getEnd(), Time.now());
-		routeList = routeFinder.calculateRoutes();
+		/*routeList = */routeFinder.calculateRoutes(this);
 
-		RoutesAdapter routesAdapter = new RoutesAdapter(this, R.layout.route_list_b, routeList);
-		((ListView) findViewById(R.id.listView3)).setAdapter(routesAdapter);
 
-		Filler.fillRoute(findViewById(R.id.favoriteStops), routeList.get(0), this);
 	}
 
 	public static void selectRoute(Activity activity, Route route) {
@@ -54,5 +51,13 @@ public class SelectRouteActivityB extends Activity {
 		activity.startActivity(intent);
 
 		activity.finish();
+	}
+
+	public void setRouteList(List<Route> routeList){
+		this.routeList = routeList;
+		RoutesAdapter routesAdapter = new RoutesAdapter(this, R.layout.route_list_b, routeList);
+		((ListView) findViewById(R.id.listView3)).setAdapter(routesAdapter);
+
+		Filler.fillRoute(findViewById(R.id.favoriteStops), routeList.get(0), this);
 	}
 }

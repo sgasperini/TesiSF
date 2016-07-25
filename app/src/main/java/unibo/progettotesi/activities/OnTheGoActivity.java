@@ -39,6 +39,16 @@ public class OnTheGoActivity extends Activity {
 	private TextView minRemaining;
 	private TextView minTotalRemaining;
 	LocationToolbox locationToolbox;
+	private boolean isClose1;
+	private int oldd0;
+	private int oldd1;
+	private boolean gettingClose1;
+	private boolean roadDistance1;
+	private int roadd0;
+	private int roadd1;
+	private int oldRoadd0;
+	private int oldRoadd1;
+	private boolean calculatedd1;
 
 	@Override
 	protected void onStart() {
@@ -129,18 +139,70 @@ public class OnTheGoActivity extends Activity {
 			distance.setText("Metri: " + (int) LocationToolbox.distance(location.getLatitude(), stopsToGo.get(0).getLocation().getLatitude(), location.getLongitude(), stopsToGo.get(0).getLocation().getLongitude(), 0.0, 0.0));
 	}
 
+	private void locationUpdated(Location location){
+		passingCondition(location);
 
+		updateViews(location);
+	}
 
+	private void passingCondition(Location location) {
+		int d0 = ((int) LocationToolbox.distance(location.getLatitude(), stopsToGo.get(0).getLocation().getLatitude(), location.getLongitude(), stopsToGo.get(0).getLocation().getLongitude(), 0.0, 0.0));
+		int d1 = ((int) LocationToolbox.distance(location.getLatitude(), stopsToGo.get(1).getLocation().getLatitude(), location.getLongitude(), stopsToGo.get(1).getLocation().getLongitude(), 0.0, 0.0));
 
+		isClose(d0 < 20, (int) location.getAccuracy());
+		gettingCloseNext(location, d0, d1);
+	}
+
+	private void gettingCloseNext(Location location, int d0, int d1) {
+		if(d0 > oldd0 && d1 < oldd1){
+			oldd0 = d0;
+			oldd1 = d1;
+			if(gettingClose1){
+				calculatedd1 = false;
+				roadDistance(location);
+				return;
+			}
+			gettingClose1 = true;
+			return;
+		}
+		gettingClose1 = false;
+		roadDistance1 = false;
+		oldd0 = d0;
+		oldd1 = d1;
+	}
+
+	private void roadDistance(Location location) {
+		//calcola le due distanze
+		RealTimeTracker.calculateDistances(this, location, stopsToGo.get(0).getLocation(), stopsToGo.get(1).getLocation());
+	}
+
+	private void isClose(boolean d, int acc) {		//è a meno di 20m con precisione di max 20m
+		if(acc < 20 && d){
+			if(isClose1)
+				stopPassed();
+			isClose1 = true;
+		}else{
+			if(!d)
+				isClose1 = false;
+		}
+	}
+
+	private void stopPassed() {
+		previousStop = stopsToGo.get(0);
+		stopsToGo.remove(0);
+		isClose1 = false;
+		gettingClose1 = false;
+		roadDistance1 = false;
+		oldd0 = 0;
+		oldd1 = 0;
+	}
 
 
 	private final class MyLocationListener implements LocationListener {
 
 		@Override
 		public void onLocationChanged(Location location) {
-			updateViews(location);
-
-			//
+			locationUpdated(location);
 		}
 
 		@Override
@@ -160,5 +222,39 @@ public class OnTheGoActivity extends Activity {
 	}
 
 
+	public int getRoadd0() {
+		return roadd0;
+	}
 
+	public void setRoadd0(int roadd0) {
+		this.roadd0 = roadd0;
+		compare();
+	}
+
+	private void compare() {
+		if(!calculatedd1)
+			calculatedd1 = true;
+		else{
+			if(roadDistance1){
+				if(roadd0 > oldRoadd0 && roadd1 < oldRoadd1) {
+					stopPassed();
+					updateViews(null);
+				}
+			}else {
+				roadDistance1 = true;
+				calculatedd1 = false;
+				oldRoadd0 = roadd0;
+				oldRoadd1 = roadd1;
+			}
+		}
+	}
+
+	public int getRoadd1() {
+		return roadd1;
+	}
+
+	public void setRoadd1(int roadd1) {
+		this.roadd1 = roadd1;
+		compare();
+	}
 }

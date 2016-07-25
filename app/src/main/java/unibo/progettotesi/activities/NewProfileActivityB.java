@@ -20,6 +20,7 @@ import unibo.progettotesi.model.Location;
 import unibo.progettotesi.model.Place;
 import unibo.progettotesi.model.Profile;
 import unibo.progettotesi.utilities.LocationToolbox;
+import unibo.progettotesi.utilities.RealTimeTracker;
 
 public class NewProfileActivityB extends AppCompatActivity {
 	private boolean start;
@@ -54,6 +55,8 @@ public class NewProfileActivityB extends AppCompatActivity {
 		latitude = locationToolbox.getLatitude();
 		longitude = locationToolbox.getLongitude();
 		coordinatesToAddress();
+
+		//RealTimeTracker.calculateDistances(null, locationToolbox.getLocation(), new Location(44.475409, 11.395950, ""), new Location(44.481295, 11.380806, ""));
 
 		location = new Location(latitude, longitude, address);
 		place = new Place(location);
