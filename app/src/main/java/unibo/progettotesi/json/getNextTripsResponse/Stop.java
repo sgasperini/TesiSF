@@ -22,4 +22,5 @@ public class Stop {
     @Expose
     public String stopName;
 
+
 }

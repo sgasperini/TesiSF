@@ -75,7 +75,7 @@ public class Time {
 	}
 
 	public static int getDifference(Time startTime, Time endTime) {
-		return endTime.minute - startTime.minute + 60 * (endTime.hour - startTime.hour);
+		return endTime.minute - startTime.minute + 60 * (endTime.hour - startTime.hour) + (endTime.hour < startTime.hour ? 12 * 60 : 0);
 	}
 
 	public String savingString() {

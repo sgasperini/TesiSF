@@ -35,7 +35,7 @@ import unibo.progettotesi.model.Stop;
 public class RealTimeTracker {
 	private OnTheGoActivity onTheGoActivity;
 	private Leg currentLeg;
-
+	private boolean antiLoop = false;
 
 
 	public static void setDistanceTo(TextView textView, Stop stop){
@@ -43,10 +43,10 @@ public class RealTimeTracker {
 	}
 
 	public static void setBusTime(TextView textView, Stop stop, Line line, unibo.progettotesi.utilities.Time time){
-		textView.setText(new unibo.progettotesi.utilities.Time(10, 30).toString());
+		textView.setText(time.toString());
 	}
 
-	public void getStopsFromWeb(OnTheGoActivity onTheGoActivity, final Leg currentLeg){
+	public void getStopsFromWeb(final OnTheGoActivity onTheGoActivity, final Leg currentLeg, final boolean first){
 		this.onTheGoActivity = onTheGoActivity;
 		this.currentLeg = currentLeg;
 
@@ -57,15 +57,40 @@ public class RealTimeTracker {
 
 		RequestStops service = retrofit.create(RequestStops.class);
 
-		Call<Response> queryResponseCall = service.requestStops(new Request(new Date(7, 2016, 22), 0, "19", "6012", 1, "1041", new unibo.progettotesi.json.getNextTripsRequest.Time(4,30,0)));
+		Calendar calendar = Calendar.getInstance();
+
+		Time time = new Time(currentLeg.getStartTime().getHour(), currentLeg.getStartTime().getMinute(), 0);
+		Date date = new Date(calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR),
+				calendar.get(Calendar.DAY_OF_MONTH));
+
+		Call<Response> queryResponseCall = service.requestStops(new Request(
+				date, (first ? 0 : 1), currentLeg.getLine().getName(),
+				currentLeg.getStartStop().getCode() + "", 1000, currentLeg.getEndStop().getCode() + "",
+				time));
 
 		queryResponseCall.enqueue(new Callback<Response>(){
 
 			@Override
 			public void onResponse(retrofit2.Response<Response> response) {
 				try{
-					if(response.body() != null /**/)
-						stopToInterStopConverter(response.body().trips.stops);
+					if(response.body() != null && response.code() == 200){
+						boolean found = false;
+						for (int i = 0; i < response.body().trips.size() && !found; i++) {
+							if(response.body().trips.get(i).tripId.equals(currentLeg.getLine().getTripID())) {
+								stopToInterStopConverter(response.body().trips.get(i).stops);
+								found = true;
+							}
+						}
+						if(!found && !antiLoop){
+							getStopsFromWeb(onTheGoActivity, currentLeg, !first);
+							antiLoop = true;
+						}
+					}else if(response.body() == null && response.code() == 200){
+						if(!antiLoop){
+							getStopsFromWeb(onTheGoActivity, currentLeg, !first);
+							antiLoop = true;
+						}
+					}
 				}catch (Exception e){
 					e.printStackTrace();
 				}

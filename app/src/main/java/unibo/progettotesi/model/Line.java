@@ -7,11 +7,20 @@ import java.util.StringTokenizer;
 public class Line {
 	private String name;
 	private String lastStop;
+	private String tripID;
 	private List<Stop> stops;
 
-	public Line(String name, String lastStop) {
+	public Line(String name, String tripID) {
 		this.name = name;
-		this.lastStop = lastStop;
+		this.tripID = tripID;
+	}
+
+	public String getTripID() {
+		return tripID;
+	}
+
+	public void setTripID(String tripID) {
+		this.tripID = tripID;
 	}
 
 	public String getName() {
@@ -43,11 +52,11 @@ public class Line {
 	}
 
 	public String savingStringAllStops() {
-		return name + "•" + lastStop + savingStops();
+		return name + "•" + tripID + savingStops();
 	}
 
 	public String savingString() {
-		return name + "•" + lastStop;
+		return name + "•" + tripID;
 	}
 
 	public static Line getLineFromString(String saved){

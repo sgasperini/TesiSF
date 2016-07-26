@@ -1,9 +1,11 @@
 package unibo.progettotesi.model;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import unibo.progettotesi.json.planner.Response;
 import unibo.progettotesi.utilities.Time;
 
 public class Route {
@@ -134,5 +136,49 @@ public class Route {
 			ll.add(Leg.getLegFromString(stringTokenizer.nextToken()));
 		}
 		return ll;
+	}
+
+	public static Route getRouteFromPlanner(Response response){
+		try{
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTimeInMillis(response.getStartime());
+			Time startTime = new Time(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE));
+
+			calendar.setTimeInMillis(response.getEndtime());
+			Time endTime = new Time(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE));
+
+			Location start = new Location(Double.parseDouble(response.getFrom().getLat()), Double.parseDouble(response.getFrom().getLon()), response.getFrom().getName());
+			Location end = new Location(Double.parseDouble(response.getTo().getLat()), Double.parseDouble(response.getTo().getLon()), response.getTo().getName());
+			Place startPlace = new Place(start.getAddress(), start);
+			Place endPlace = new Place(end.getAddress(), end);
+
+			List<Leg> legs = new ArrayList<Leg>();
+
+			for (int i = 0; i < response.getLeg().size(); i++) {
+				unibo.progettotesi.json.planner.Leg legR = response.getLeg().get(i);
+				String transportType = legR.getTransport().getType();
+
+				if(transportType != null && !transportType.equals("") && !transportType.equals("WALK")){
+					Location startL = new Location(Double.parseDouble(legR.getFrom().getLat()), Double.parseDouble(legR.getFrom().getLon()), legR.getFrom().getName());
+					StringTokenizer stringTokenizer = new StringTokenizer(legR.getFrom().getStopId().getId(), "_");
+					Stop startSt = new Stop(startL, Integer.parseInt(stringTokenizer.nextToken()), legR.getFrom().getName());
+					Location endL = new Location(Double.parseDouble(legR.getTo().getLat()), Double.parseDouble(legR.getTo().getLon()), legR.getTo().getName());
+					stringTokenizer = new StringTokenizer(legR.getTo().getStopId().getId(), "_");
+					Stop endSt = new Stop(endL, Integer.parseInt(stringTokenizer.nextToken()), legR.getTo().getName());
+					Line line = new Line(legR.getTransport().getRouteShortName(), legR.getTransport().getTripId());
+					calendar.setTimeInMillis(legR.getStartime());
+					Time departure = new Time(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE));
+					calendar.setTimeInMillis(legR.getEndtime());
+					Time arrival = new Time(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE));
+					legs.add(new Leg(startSt, endSt, line, departure, arrival));
+				}
+
+			}
+
+			return new Route(legs, startPlace, endPlace, startTime, endTime, legs.get(0).getStartStop(), legs.get(legs.size() - 1).getEndStop());
+		}catch(Exception e){
+			e.printStackTrace();
+			return null;
+		}
 	}
 }

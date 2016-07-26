@@ -101,7 +101,7 @@ public class OnTheGoActivity extends Activity {
 		locationToolbox.getLocation();
 
 		RealTimeTracker realTimeTracker = new RealTimeTracker();
-		realTimeTracker.getStopsFromWeb(this, currentLeg);
+		realTimeTracker.getStopsFromWeb(this, currentLeg, true);
 
 	//	Log.wtf("TEST STOPS OTG", currentLeg.getInterStops().get(1).getName());
 	}
@@ -115,7 +115,8 @@ public class OnTheGoActivity extends Activity {
 			intent.putExtra("NLeg", nLeg + 1);
 			startActivity(intent);
 		}
-		locationToolbox.stopUsingGPS();
+		if(locationToolbox != null)
+			locationToolbox.stopUsingGPS();
 		finish();
 	}
 
@@ -123,9 +124,11 @@ public class OnTheGoActivity extends Activity {
 	public void setNewLeg(Leg currentLeg) {
 		this.currentLeg = currentLeg;
 		stopsToGo = currentLeg.getInterStops();
-		previousStop = stopsToGo.get(0);
-		stopsToGo.remove(0);
-		updateViews(null);
+		if(stopsToGo != null){
+			previousStop = stopsToGo.get(0);
+			stopsToGo.remove(0);
+			updateViews(null);
+		}
 	}
 
 	private void updateViews(Location location) {
@@ -140,9 +143,10 @@ public class OnTheGoActivity extends Activity {
 	}
 
 	private void locationUpdated(Location location){
-		passingCondition(location);
-
-		updateViews(location);
+		if(stopsToGo != null) {
+			passingCondition(location);
+			updateViews(location);
+		}
 	}
 
 	private void passingCondition(Location location) {
