@@ -108,14 +108,13 @@ public class Route {
 	}
 
 	public String savingString(){
-		return startPlace.savingString() + "†" + endPlace.savingString() + "†" + startTime.savingString() + "†" + endTime.savingString() + "†" + startStop.savingString() + "†" + endStop.savingString() + "†" + savingLegs();
+		return startPlace.savingString() + "†" + endPlace.savingString() + "†" + startTime.savingString() + "†" + endTime.savingString() + "†" + startStop.savingString() + "†" + endStop.savingString() + savingLegs();
 	}
 
 	private String savingLegs() {
 		String s = "";
 		for (int i = 0; i < legs.size(); i++) {
-			if(i > 0)
-				s += "†";
+			s += "†";
 			s += legs.get(i).savingString();
 		}
 		return s;
@@ -125,11 +124,11 @@ public class Route {
 		StringTokenizer stringTokenizer = new StringTokenizer(saved, "†");
 		Route r = new Route(Place.getPlaceFromString(stringTokenizer.nextToken()), Place.getPlaceFromString(stringTokenizer.nextToken()), Time.getTimeFromString(stringTokenizer.nextToken()), Time.getTimeFromString(stringTokenizer.nextToken()), Stop.getStopFromString(stringTokenizer.nextToken()), Stop.getStopFromString(stringTokenizer.nextToken()));
 		if(stringTokenizer.hasMoreTokens())
-			r.setLegs(getStopsFromString(stringTokenizer.nextToken("«")));
+			r.setLegs(getLegsFromString(stringTokenizer.nextToken("«")));
 		return r;
 	}
 
-	private static List<Leg> getStopsFromString(String s) {
+	private static List<Leg> getLegsFromString(String s) {
 		List<Leg> ll = new ArrayList<Leg>();
 		StringTokenizer stringTokenizer = new StringTokenizer(s, "†");
 		while(stringTokenizer.hasMoreTokens()){
@@ -166,11 +165,15 @@ public class Route {
 					stringTokenizer = new StringTokenizer(legR.getTo().getStopId().getId(), "_");
 					Stop endSt = new Stop(endL, Integer.parseInt(stringTokenizer.nextToken()), legR.getTo().getName());
 					Line line = new Line(legR.getTransport().getRouteShortName(), legR.getTransport().getTripId());
+					stringTokenizer = new StringTokenizer(legR.getTransport().getRouteId(), "_");
+					stringTokenizer.nextToken();
+					stringTokenizer.nextToken();
+					int direction = Integer.parseInt(stringTokenizer.nextToken());
 					calendar.setTimeInMillis(legR.getStartime());
 					Time departure = new Time(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE));
 					calendar.setTimeInMillis(legR.getEndtime());
 					Time arrival = new Time(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE));
-					legs.add(new Leg(startSt, endSt, line, departure, arrival));
+					legs.add(new Leg(startSt, endSt, line, departure, arrival, direction));
 				}
 
 			}

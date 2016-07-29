@@ -18,6 +18,7 @@ import unibo.progettotesi.utilities.Time;
 
 public class BusWaitingActivity extends Activity {
 	private Route route;
+	private int nLeg;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +29,16 @@ public class BusWaitingActivity extends Activity {
 
 		route = Route.getRouteFromString(sharedPreferences.getString("CurrentRoute", ""));
 
-		//Filler.fillRoute(findViewById(R.id.favoriteStops), route, this);
+		Filler.fillRoute(findViewById(R.id.routeLayout), route, this);
+		findViewById(R.id.routeLayout).setClickable(false);
+
+		nLeg = getIntent().getIntExtra("NLeg", 0);
+		if(nLeg > 0){
+			route.getLegs().remove(0);
+			if(nLeg > 1){
+				route.getLegs().remove(0);
+			}
+		}
 
 		Filler.fillLeg(findViewById(R.id.firstLeg), route.getLegs().get(0));
 		int nLegs = route.getLegs().size();
@@ -39,6 +49,7 @@ public class BusWaitingActivity extends Activity {
 			else
 				Filler.fillLeg(findViewById(R.id.secondLeg), route.getLegs().get(1));
 		}else{
+			Filler.fillLeg(findViewById(R.id.secondLeg), route.getLegs().get(1));
 			Filler.fillLeg(findViewById(R.id.thirdLeg), route.getLegs().get(2));
 		}
 
@@ -48,6 +59,7 @@ public class BusWaitingActivity extends Activity {
 	public void getOn(View view) {
 		//start next
 		Intent intent = new Intent(this, OnTheGoActivity.class);
+		intent.putExtra("NLeg", nLeg);
 		startActivity(intent);
 
 		finish();

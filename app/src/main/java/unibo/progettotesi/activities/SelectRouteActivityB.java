@@ -55,9 +55,9 @@ public class SelectRouteActivityB extends Activity {
 
 	public void setRouteList(List<Route> routeList){
 		this.routeList = routeList;
-		RoutesAdapter routesAdapter = new RoutesAdapter(this, R.layout.route_list_b, routeList);
-		((ListView) findViewById(R.id.listView3)).setAdapter(routesAdapter);
-
 		Filler.fillRoute(findViewById(R.id.favoriteStops), routeList.get(0), this);
+
+		RoutesAdapter routesAdapter = new RoutesAdapter(this, R.layout.route_list_b, routeList.subList(1, routeList.size()));
+		((ListView) findViewById(R.id.listView3)).setAdapter(routesAdapter);
 	}
 }

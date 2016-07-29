@@ -2,12 +2,14 @@ Da sistemare:
 
 - quando aspetti non ti dice quante fermate star su, poi sali e te lo dovrebbe dire
 - quando hai due autobus da prendere e uno parte nel giorno dopo (dopo mezzanotte) sbalena (salvare la data di ogni leg)
-
+- beta3 di Retrofit.........
+- rilevazione partenza sbagliata o pressione salgo quando già salito da un tot
 
 da fare prossima volta
 - leg più intelligente per gestire il cammino pure
 - aggiungere la camminata (metri) alle view
-- la parte alta che non cambia mai, personalizzarla
-- tre autobus e waiting activity
-- 2 autobus scendi e sale automaticamente sul nuovo, invece ci vuole waiting
-- non sappiamo quale bus ma di solito non il primo, non riesce a trovare le fermate per o socket timeout o cerca un array e trova un object
+
+
+
+problemi esterni
+- ogni tanto si va in socket timeout non si sa perché forse problemi di internet

@@ -2,11 +2,15 @@ package unibo.progettotesi.utilities;
 
 import android.util.Log;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.GsonConverterFactory;
@@ -69,6 +73,17 @@ public class RouteFinder {
 		RequestPlan service = retrofit.create(RequestPlan.class);
 		String date = new SimpleDateFormat("MM/dd/yyyy").format(Calendar.getInstance().getTime());
 		String time = unibo.progettotesi.utilities.Time.now().toString();
+
+		URL url = null;
+		HttpURLConnection connection = null;
+		try {
+			url = new URL(Constants.PLANNING_BASE_URL + "bologna/rest/plan");
+			connection = (HttpURLConnection) url.openConnection();
+			connection.setConnectTimeout( 60000 );
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		Log.wtf("TIMEOUT", connection.getConnectTimeout() + "\t" + connection.getReadTimeout());
 
 		Call<List<unibo.progettotesi.json.planner.Response>> queryResponseCall = service.requestPlan(
 				startPlace.getLocation().getLatitude() + "," + startPlace.getLocation().getLongitude(),

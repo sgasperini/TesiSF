@@ -14,6 +14,7 @@ public class Leg {
 	private Time startTime;
 	private Time endTime;
 	private List<Stop> interStops;
+	private int direction;
 
 	public Leg(Stop startStop, Stop endStop, Line line, Time startTime, Time endTime, List<Stop> interStops) {
 		this.startStop = startStop;
@@ -31,6 +32,24 @@ public class Leg {
 		this.startTime = startTime;
 		this.endTime = endTime;
 		interStops = new ArrayList<Stop>();
+	}
+
+	public Leg(Stop startStop, Stop endStop, Line line, Time startTime, Time endTime, int direction) {
+		this.startStop = startStop;
+		this.endStop = endStop;
+		this.line = line;
+		this.startTime = startTime;
+		this.endTime = endTime;
+		this.direction = direction;
+		interStops = new ArrayList<Stop>();
+	}
+
+	public int getDirection() {
+		return direction;
+	}
+
+	public void setDirection(int direction) {
+		this.direction = direction;
 	}
 
 	public Stop getStartStop() {
@@ -86,11 +105,11 @@ public class Leg {
 	}
 
 	public String savingString() {
-		return startStop.savingString() + "¬" + endStop.savingString() + "¬" + line.savingString() + "¬" + startTime.savingString() + "¬" + endTime.savingString();
+		return startStop.savingString() + "¬" + endStop.savingString() + "¬" + line.savingString() + "¬" + startTime.savingString() + "¬" + endTime.savingString() + "¬" + direction;
 	}
 
 	public static Leg getLegFromString(String saved) {
 		StringTokenizer stringTokenizer = new StringTokenizer(saved, "¬");
-		return new Leg(Stop.getStopFromString(stringTokenizer.nextToken()), Stop.getStopFromString(stringTokenizer.nextToken()), Line.getLineFromString(stringTokenizer.nextToken()), Time.getTimeFromString(stringTokenizer.nextToken()), Time.getTimeFromString(stringTokenizer.nextToken()));
+		return new Leg(Stop.getStopFromString(stringTokenizer.nextToken()), Stop.getStopFromString(stringTokenizer.nextToken()), Line.getLineFromString(stringTokenizer.nextToken()), Time.getTimeFromString(stringTokenizer.nextToken()), Time.getTimeFromString(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken()));
 	}
 }

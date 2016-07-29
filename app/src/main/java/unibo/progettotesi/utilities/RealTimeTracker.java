@@ -5,12 +5,17 @@ import android.location.Geocoder;
 import android.util.Log;
 import android.widget.TextView;
 
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
+import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.GsonConverterFactory;
@@ -36,7 +41,7 @@ public class RealTimeTracker {
 	private OnTheGoActivity onTheGoActivity;
 	private Leg currentLeg;
 	private boolean antiLoop = false;
-
+	private boolean failed = false;
 
 	public static void setDistanceTo(TextView textView, Stop stop){
 		textView.setText(500 + "");
@@ -55,6 +60,19 @@ public class RealTimeTracker {
 				.addConverterFactory(GsonConverterFactory.create())	//parse Gson string
 				.build();
 
+		URL url = null;
+		HttpURLConnection connection = null;
+		try {
+			url = new URL(Constants.GET_NEXT_TRIPS_BASE_URL + "getNextTrips");
+			connection = (HttpURLConnection) url.openConnection();
+			connection.setConnectTimeout( 60000 );
+			Log.wtf("TIMEOUT", connection.getConnectTimeout() + "\t" + connection.getReadTimeout());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+
+
 		RequestStops service = retrofit.create(RequestStops.class);
 
 		Calendar calendar = Calendar.getInstance();
@@ -64,8 +82,8 @@ public class RealTimeTracker {
 				calendar.get(Calendar.DAY_OF_MONTH));
 
 		Call<Response> queryResponseCall = service.requestStops(new Request(
-				date, (first ? 0 : 1), currentLeg.getLine().getName(),
-				currentLeg.getStartStop().getCode() + "", 1000, currentLeg.getEndStop().getCode() + "",
+				date, (first ? currentLeg.getDirection() : (currentLeg.getDirection() == 0 ? 1 : 0)), currentLeg.getLine().getName(),
+				currentLeg.getStartStop().getCode() + "", 2, currentLeg.getEndStop().getCode() + "",
 				time));
 
 		queryResponseCall.enqueue(new Callback<Response>(){
@@ -84,11 +102,13 @@ public class RealTimeTracker {
 						if(!found && !antiLoop){
 							getStopsFromWeb(onTheGoActivity, currentLeg, !first);
 							antiLoop = true;
+							failed = false;
 						}
 					}else if(response.body() == null && response.code() == 200){
 						if(!antiLoop){
 							getStopsFromWeb(onTheGoActivity, currentLeg, !first);
 							antiLoop = true;
+							failed = false;
 						}
 					}
 				}catch (Exception e){
@@ -99,6 +119,10 @@ public class RealTimeTracker {
 			@Override
 			public void onFailure(Throwable t) {
 				t.printStackTrace();
+				if(!failed) {
+					failed = true;
+					getStopsFromWeb(onTheGoActivity, currentLeg, first);
+				}
 			}
 		});
 	}
@@ -122,7 +146,7 @@ public class RealTimeTracker {
 			}
 			if(journeyStops || last){
 				unibo.progettotesi.json.getNextTripsResponse.Stop stopR = stopsR.get(i);
-				stopsOutput.add(new Stop(new Location(stopR.stopLat, stopR.stopLon, coordinatesToAddress(stopR.stopLat, stopR.stopLon)), Integer.parseInt(stopR.stopId), stopR.stopName, new unibo.progettotesi.utilities.Time(stopR.departureTime)));
+				stopsOutput.add(new Stop(new Location(stopR.stopLat, stopR.stopLon, "" /*coordinatesToAddress(stopR.stopLat, stopR.stopLon)*/), Integer.parseInt(stopR.stopId), stopR.stopName, new unibo.progettotesi.utilities.Time(stopR.departureTime)));
 				if(last){
 					last = false;
 					i = stopsR.size();

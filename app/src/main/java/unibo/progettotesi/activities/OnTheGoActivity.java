@@ -21,6 +21,7 @@ import unibo.progettotesi.R;
 import unibo.progettotesi.model.Leg;
 import unibo.progettotesi.model.Route;
 import unibo.progettotesi.model.Stop;
+import unibo.progettotesi.utilities.Filler;
 import unibo.progettotesi.utilities.LocationToolbox;
 import unibo.progettotesi.utilities.RealTimeTracker;
 import unibo.progettotesi.utilities.Time;
@@ -89,6 +90,9 @@ public class OnTheGoActivity extends Activity {
 		minRemaining = (TextView) findViewById(R.id.minutesToGo_otg);
 		minTotalRemaining = (TextView) findViewById(R.id.timeToFinalDestination_otg);
 
+		Filler.fillRoute(findViewById(R.id.route_otg), route, this);
+		findViewById(R.id.route_otg).setClickable(false);
+
 		line.setText(currentLeg.getLine().getName());
 		//previousS
 		RealTimeTracker.setDistanceTo(distance, currentLeg.getEndStop());	//da rivedere
@@ -111,7 +115,7 @@ public class OnTheGoActivity extends Activity {
 			Intent intent = new Intent(this, DestinationActivityB.class);
 			startActivity(intent);
 		}else{
-			Intent intent = new Intent(this, OnTheGoActivity.class);
+			Intent intent = new Intent(this, BusWaitingActivity.class);
 			intent.putExtra("NLeg", nLeg + 1);
 			startActivity(intent);
 		}
