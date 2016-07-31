@@ -24,6 +24,7 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
+import unibo.progettotesi.activities.BusWaitingActivity;
 import unibo.progettotesi.activities.OnTheGoActivity;
 import unibo.progettotesi.json.getNextTripsRequest.Date;
 import unibo.progettotesi.json.getNextTripsRequest.Request;
@@ -44,11 +45,54 @@ public class RealTimeTracker {
 	private boolean failed = false;
 
 	public static void setDistanceTo(TextView textView, Stop stop){
-		textView.setText(500 + "");
+		textView.setText(500 + " metri");
 	}
 
-	public static void setBusTime(TextView textView, Stop stop, Line line, unibo.progettotesi.utilities.Time time){
-		textView.setText(time.toString());
+	public static void getBusETA(final TextView textView, String code, final String line) {
+		Retrofit retrofit = new Retrofit.Builder()      //create the retrofit builder
+				.baseUrl(Constants.ETA_BASE_URL)
+				.addConverterFactory(GsonConverterFactory.create())	//parse Gson string
+				.build();
+
+		RequestETA service = retrofit.create(RequestETA.class);
+
+		URL url = null;
+		HttpURLConnection connection = null;
+		try {
+			url = new URL(Constants.ETA_BASE_URL + "buseta");
+			connection = (HttpURLConnection) url.openConnection();
+			connection.setConnectTimeout( 60000 );
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		Log.wtf("TIMEOUT", connection.getConnectTimeout() + "\t" + connection.getReadTimeout());
+
+		Call<unibo.progettotesi.json.busETA.Response> queryResponseCall = service.requestETA(code, line);
+
+		queryResponseCall.enqueue(new Callback<unibo.progettotesi.json.busETA.Response>(){
+
+			@Override
+			public void onResponse(retrofit2.Response<unibo.progettotesi.json.busETA.Response> response) {
+				try {
+					if (response.body() != null  && response.code() == 200){
+						textView.setText("Prossimo " + line + " stimato da satellite: " + response.body().result.eta);
+					}
+				}catch (Exception e){
+					//non c'è l'informazione realTime
+				}
+			}
+
+			@Override
+			public void onFailure(Throwable t) {
+				t.printStackTrace();
+			}
+		});
+	}
+
+	public interface RequestETA {
+		@GET("buseta")
+		Call<unibo.progettotesi.json.busETA.Response> requestETA(@Query("stop") String stop,
+																 @Query("route") String route);
 	}
 
 	public void getStopsFromWeb(final OnTheGoActivity onTheGoActivity, final Leg currentLeg, final boolean first){
@@ -66,7 +110,7 @@ public class RealTimeTracker {
 			url = new URL(Constants.GET_NEXT_TRIPS_BASE_URL + "getNextTrips");
 			connection = (HttpURLConnection) url.openConnection();
 			connection.setConnectTimeout( 60000 );
-			Log.wtf("TIMEOUT", connection.getConnectTimeout() + "\t" + connection.getReadTimeout());
+			//Log.wtf("TIMEOUT", connection.getConnectTimeout() + "\t" + connection.getReadTimeout());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

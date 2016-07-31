@@ -4,21 +4,20 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.view.View;
-import android.widget.ListView;
+import android.widget.TextView;
 
 import unibo.progettotesi.R;
-import unibo.progettotesi.adapters.RoutesAdapter;
-import unibo.progettotesi.model.Profile;
 import unibo.progettotesi.model.Route;
 import unibo.progettotesi.utilities.Filler;
-import unibo.progettotesi.utilities.RouteFinder;
-import unibo.progettotesi.utilities.Time;
+import unibo.progettotesi.utilities.RealTimeTracker;
 
 public class BusWaitingActivity extends Activity {
 	private Route route;
 	private int nLeg;
+	private CountDownTimer timer;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +52,25 @@ public class BusWaitingActivity extends Activity {
 			Filler.fillLeg(findViewById(R.id.thirdLeg), route.getLegs().get(2));
 		}
 
+		getETA();
 
+		timer = new CountDownTimer(500000000, 60000) {
+
+			public void onTick(long millisUntilFinished) {
+				getETA();
+			}
+
+			public void onFinish() {
+				//
+			}
+		};
+		timer.start();
 	}
+
+	private void getETA() {
+		RealTimeTracker.getBusETA((TextView) findViewById(R.id.firstLeg).findViewById(R.id.busStartRealTime_leg), route.getLegs().get(nLeg).getStartStop().getCode() + "", route.getLegs().get(nLeg).getLine().getName());
+	}
+
 
 	public void getOn(View view) {
 		//start next
@@ -62,6 +78,13 @@ public class BusWaitingActivity extends Activity {
 		intent.putExtra("NLeg", nLeg);
 		startActivity(intent);
 
+		timer.cancel();
 		finish();
+	}
+
+	@Override
+	protected void onDestroy() {
+		timer.cancel();
+		super.onDestroy();
 	}
 }
