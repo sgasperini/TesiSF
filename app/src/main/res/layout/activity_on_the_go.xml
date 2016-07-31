@@ -86,7 +86,8 @@
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="Minuti a scendere"
                 android:id="@+id/minutesToGo_otg"
-                android:layout_gravity="center_horizontal"/>
+                android:layout_gravity="center_horizontal"
+                android:gravity="center_horizontal"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -94,7 +95,8 @@
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="Tempo Rimanente del viaggio"
                 android:id="@+id/timeToFinalDestination_otg"
-                android:layout_gravity="center_horizontal"/>
+                android:layout_gravity="center_horizontal"
+                android:gravity="center_horizontal"/>
 
         </LinearLayout>
     </ScrollView>

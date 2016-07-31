@@ -10,6 +10,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.view.View;
@@ -22,11 +23,12 @@ import unibo.progettotesi.model.Leg;
 import unibo.progettotesi.model.Route;
 import unibo.progettotesi.model.Stop;
 import unibo.progettotesi.utilities.Filler;
+import unibo.progettotesi.utilities.HelloBus;
 import unibo.progettotesi.utilities.LocationToolbox;
 import unibo.progettotesi.utilities.RealTimeTracker;
 import unibo.progettotesi.utilities.Time;
 
-public class OnTheGoActivity extends Activity {
+public class OnTheGoActivity extends Activity implements HelloBus{
 	private Route route;
 	private Leg currentLeg;
 	private int nLeg;
@@ -50,6 +52,8 @@ public class OnTheGoActivity extends Activity {
 	private int oldRoadd0;
 	private int oldRoadd1;
 	private boolean calculatedd1;
+	private CountDownTimer timer;
+	private String actualBus;
 
 	@Override
 	protected void onStart() {
@@ -77,6 +81,8 @@ public class OnTheGoActivity extends Activity {
 
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		route = Route.getRouteFromString(sharedPreferences.getString("CurrentRoute", ""));
+
+		actualBus = getIntent().getStringExtra("Bus");
 
 		nLeg = getIntent().getIntExtra("NLeg", 0);
 
@@ -108,6 +114,23 @@ public class OnTheGoActivity extends Activity {
 		realTimeTracker.getStopsFromWeb(this, currentLeg, true);
 
 	//	Log.wtf("TEST STOPS OTG", currentLeg.getInterStops().get(1).getName());
+
+		failure();
+
+		timer = new CountDownTimer(500000000, 30000) {
+
+			public void onTick(long millisUntilFinished) {
+				if(actualBus != null)
+					getETA();
+				else
+					failure();
+			}
+
+			public void onFinish() {
+				//
+			}
+		};
+		timer.start();
 	}
 
 	public void getOff(View view){
@@ -122,8 +145,29 @@ public class OnTheGoActivity extends Activity {
 		if(locationToolbox != null)
 			locationToolbox.stopUsingGPS();
 		finish();
+		timer.cancel();
 	}
 
+	private void getETA() {
+		RealTimeTracker.getBusETA(this, currentLeg.getStartStop().getCode() + "", currentLeg.getLine().getName());
+	}
+
+	@Override
+	public void setETA(Time time, String bus) {
+		if(bus.equals(actualBus)){
+			if(stopsToGo != null) {
+				minRemaining.setText("Minuti a scendere:\n" + "stimati da satellite " + Time.getDifference(Time.now(), time) + "\nprevisti da orario " + Time.getDifference(Time.now(), stopsToGo.get(stopsToGo.size() - 1).getDepartureTime()));
+				minTotalRemaining.setText("Minuti a destinazione:\nstimati da satellite non più di " + (Time.getDifference(Time.now(), route.getEndTime()) + Time.getDifference(stopsToGo.get(stopsToGo.size() - 1).getDepartureTime(), time)) + "\nprevisti " + Time.getDifference(Time.now(), route.getEndTime()));
+			}
+		}else
+			failure();
+	}
+
+	public void failure(){
+		if(stopsToGo != null)
+			minRemaining.setText("Minuti a scendere:\nprevisti da orario " + Time.getDifference(Time.now(), stopsToGo.get(stopsToGo.size() - 1).getDepartureTime()));
+		minTotalRemaining.setText("Minuti a destinazione:\nprevisti " + Time.getDifference(Time.now(), route.getEndTime()));
+	}
 
 	public void setNewLeg(Leg currentLeg) {
 		this.currentLeg = currentLeg;
@@ -133,13 +177,13 @@ public class OnTheGoActivity extends Activity {
 			stopsToGo.remove(0);
 			updateViews(null);
 		}
+		getETA();
 	}
 
 	private void updateViews(Location location) {
 		previousS.setText(previousStop.getName());
 		nextS.setText(stopsToGo.get(0).getName());
 		nStops.setText("Fermate a scendere: " + stopsToGo.size());
-		minRemaining.setText("Minuti a scendere: " + Time.getDifference(stopsToGo.get(0).getDepartureTime(), stopsToGo.get(stopsToGo.size() - 1).getDepartureTime()));
 		if(location == null)
 			distance.setText("Metri: " + (int) LocationToolbox.distance(previousStop.getLocation().getLatitude(), stopsToGo.get(0).getLocation().getLatitude(), previousStop.getLocation().getLongitude(), stopsToGo.get(0).getLocation().getLongitude(), 0.0, 0.0));
 		else
@@ -206,6 +250,8 @@ public class OnTheGoActivity extends Activity {
 	}
 
 
+
+
 	private final class MyLocationListener implements LocationListener {
 
 		@Override
@@ -264,5 +310,11 @@ public class OnTheGoActivity extends Activity {
 	public void setRoadd1(int roadd1) {
 		this.roadd1 = roadd1;
 		compare();
+	}
+
+	@Override
+	protected void onDestroy() {
+		timer.cancel();
+		super.onDestroy();
 	}
 }

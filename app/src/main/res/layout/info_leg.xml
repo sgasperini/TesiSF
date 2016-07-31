@@ -39,7 +39,8 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Orario Real Time"
             android:id="@+id/busStartRealTime_leg"
-            android:layout_gravity="center_horizontal"/>
+            android:layout_gravity="center_horizontal"
+            android:gravity="center_horizontal"/>
 
         <TextView
             android:layout_width="wrap_content"

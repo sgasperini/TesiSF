@@ -19,6 +19,7 @@ public class Filler {
 		TextView startStop = (TextView) view.findViewById(R.id.startStop_route);
 		TextView endStop = (TextView) view.findViewById(R.id.endStop_route);
 		TextView lines = (TextView) view.findViewById(R.id.lines_route);
+		TextView walking = (TextView) view.findViewById(R.id.walking_route);
 
 		//RelativeLayout relativeLayout = (RelativeLayout) view/*.findViewById(R.id.layout_route)*/;
 
@@ -34,6 +35,7 @@ public class Filler {
 		startStop.setText(route.getStartStop().getName());
 		endStop.setText(route.getEndStop().getName());
 		lines.setText(route.getLines());
+		walking.setText(route.getMinWalking() + " min a piedi");
 	}
 
 	public static void fillLeg(View view, Leg leg){

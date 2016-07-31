@@ -53,4 +53,14 @@
         android:layout_below="@+id/lines_route"
         android:layout_alignLeft="@+id/lines_route"
         android:layout_alignStart="@+id/lines_route"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Cammino"
+        android:id="@+id/walking_route"
+        android:layout_above="@+id/endStop_route"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"/>
 </RelativeLayout>

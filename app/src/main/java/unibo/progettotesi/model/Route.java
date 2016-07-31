@@ -16,6 +16,7 @@ public class Route {
 	private Time endTime;
 	private Stop startStop;
 	private Stop endStop;
+	private int minWalking;
 
 	public Route(Place startPlace, Place endPlace, Time startTime, Time endTime, Stop startStop, Stop endStop) {
 		this.startPlace = startPlace;
@@ -27,7 +28,18 @@ public class Route {
 		legs = new ArrayList<Leg>();
 	}
 
-	public Route(List<Leg> legs, Place startPlace, Place endPlace, Time startTime, Time endTime, Stop startStop, Stop endStop) {
+	public Route(Place startPlace, Place endPlace, Time startTime, Time endTime, Stop startStop, Stop endStop, int minWalking) {
+		this.startPlace = startPlace;
+		this.endPlace = endPlace;
+		this.startTime = startTime;
+		this.endTime = endTime;
+		this.startStop = startStop;
+		this.endStop = endStop;
+		this.minWalking = minWalking;
+		legs = new ArrayList<Leg>();
+	}
+
+	public Route(List<Leg> legs, Place startPlace, Place endPlace, Time startTime, Time endTime, Stop startStop, Stop endStop, int minWalking) {
 		this.legs = legs;
 		this.startPlace = startPlace;
 		this.endPlace = endPlace;
@@ -35,6 +47,15 @@ public class Route {
 		this.endTime = endTime;
 		this.startStop = startStop;
 		this.endStop = endStop;
+		this.minWalking = minWalking;
+	}
+
+	public int getMinWalking() {
+		return minWalking;
+	}
+
+	public void setMinWalking(int minWalking) {
+		this.minWalking = minWalking;
 	}
 
 	public List<Leg> getLegs() {
@@ -108,7 +129,7 @@ public class Route {
 	}
 
 	public String savingString(){
-		return startPlace.savingString() + "†" + endPlace.savingString() + "†" + startTime.savingString() + "†" + endTime.savingString() + "†" + startStop.savingString() + "†" + endStop.savingString() + savingLegs();
+		return startPlace.savingString() + "†" + endPlace.savingString() + "†" + startTime.savingString() + "†" + endTime.savingString() + "†" + startStop.savingString() + "†" + endStop.savingString() + "†" + minWalking + savingLegs();
 	}
 
 	private String savingLegs() {
@@ -122,7 +143,7 @@ public class Route {
 
 	public static Route getRouteFromString(String saved){
 		StringTokenizer stringTokenizer = new StringTokenizer(saved, "†");
-		Route r = new Route(Place.getPlaceFromString(stringTokenizer.nextToken()), Place.getPlaceFromString(stringTokenizer.nextToken()), Time.getTimeFromString(stringTokenizer.nextToken()), Time.getTimeFromString(stringTokenizer.nextToken()), Stop.getStopFromString(stringTokenizer.nextToken()), Stop.getStopFromString(stringTokenizer.nextToken()));
+		Route r = new Route(Place.getPlaceFromString(stringTokenizer.nextToken()), Place.getPlaceFromString(stringTokenizer.nextToken()), Time.getTimeFromString(stringTokenizer.nextToken()), Time.getTimeFromString(stringTokenizer.nextToken()), Stop.getStopFromString(stringTokenizer.nextToken()), Stop.getStopFromString(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken().toString()));
 		if(stringTokenizer.hasMoreTokens())
 			r.setLegs(getLegsFromString(stringTokenizer.nextToken("«")));
 		return r;
@@ -152,6 +173,7 @@ public class Route {
 			Place endPlace = new Place(end.getAddress(), end);
 
 			List<Leg> legs = new ArrayList<Leg>();
+			int minWalking = 0;
 
 			for (int i = 0; i < response.getLeg().size(); i++) {
 				unibo.progettotesi.json.planner.Leg legR = response.getLeg().get(i);
@@ -174,13 +196,14 @@ public class Route {
 					calendar.setTimeInMillis(legR.getEndtime());
 					Time arrival = new Time(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE));
 					legs.add(new Leg(startSt, endSt, line, departure, arrival, direction));
+				}else if(transportType != null && transportType.equals("WALK")){
+					minWalking = minWalking + (int) Math.round(legR.getDuration() / 60.0);
 				}
-
 			}
 
-			return new Route(legs, startPlace, endPlace, startTime, endTime, legs.get(0).getStartStop(), legs.get(legs.size() - 1).getEndStop());
+			return new Route(legs, startPlace, endPlace, startTime, endTime, legs.get(0).getStartStop(), legs.get(legs.size() - 1).getEndStop(), minWalking);
 		}catch(Exception e){
-			e.printStackTrace();
+			//skip, probably walking only
 			return null;
 		}
 	}

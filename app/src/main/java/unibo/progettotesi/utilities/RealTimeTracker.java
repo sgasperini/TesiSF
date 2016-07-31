@@ -1,5 +1,6 @@
 package unibo.progettotesi.utilities;
 
+import android.app.Activity;
 import android.location.Address;
 import android.location.Geocoder;
 import android.util.Log;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -48,7 +50,7 @@ public class RealTimeTracker {
 		textView.setText(500 + " metri");
 	}
 
-	public static void getBusETA(final TextView textView, String code, final String line) {
+	public static void getBusETA(final HelloBus activity, String code, final String line) {
 		Retrofit retrofit = new Retrofit.Builder()      //create the retrofit builder
 				.baseUrl(Constants.ETA_BASE_URL)
 				.addConverterFactory(GsonConverterFactory.create())	//parse Gson string
@@ -75,18 +77,24 @@ public class RealTimeTracker {
 			public void onResponse(retrofit2.Response<unibo.progettotesi.json.busETA.Response> response) {
 				try {
 					if (response.body() != null  && response.code() == 200){
-						textView.setText("Prossimo " + line + " stimato da satellite: " + response.body().result.eta);
+						activity.setETA(new unibo.progettotesi.utilities.Time(response.body().result.eta), response.body().result.serial);
 					}
 				}catch (Exception e){
 					//non c'è l'informazione realTime
+					activity.failure();
 				}
 			}
 
 			@Override
 			public void onFailure(Throwable t) {
+				activity.failure();
 				t.printStackTrace();
 			}
 		});
+	}
+
+	public static void calculateWalkingDistance(BusWaitingActivity activity, android.location.Location location, Location locationS) {
+		calculateDistance(activity, location, locationS, true, "WALK");
 	}
 
 	public interface RequestETA {
@@ -203,11 +211,11 @@ public class RealTimeTracker {
 	}
 
 	public static void calculateDistances(OnTheGoActivity onTheGoActivity, android.location.Location location, Location locationS0, Location locationS1) {
-		calculateDistance(onTheGoActivity, location, locationS0, true);
-		calculateDistance(onTheGoActivity, location, locationS1, false);
+		calculateDistance(onTheGoActivity, location, locationS0, true, "CAR");
+		calculateDistance(onTheGoActivity, location, locationS1, false, "CAR");
 	}
 
-	private static void calculateDistance(final OnTheGoActivity onTheGoActivity, android.location.Location location, Location locationS, final boolean next) {
+	private static void calculateDistance(final Activity activity, android.location.Location location, Location locationS, final boolean next, final String transport) {
 		Retrofit retrofit = new Retrofit.Builder()      //create the retrofit builder
 				.baseUrl(Constants.PLANNING_BASE_URL)
 				.addConverterFactory(GsonConverterFactory.create())	//parse Gson string
@@ -219,15 +227,19 @@ public class RealTimeTracker {
 				location.getLatitude() + "," + location.getLongitude(),
 				locationS.getLatitude() + "," + locationS.getLongitude(),
 				new SimpleDateFormat("MM/dd/yyyy").format(Calendar.getInstance().getTime()),
-				unibo.progettotesi.utilities.Time.now() + "00", "CAR", "fastest", 1);
+				unibo.progettotesi.utilities.Time.now() + "00", transport, "fastest", 1);
 
 		queryResponseCall.enqueue(new Callback<List<unibo.progettotesi.json.planner.Response>>(){
 
 			@Override
 			public void onResponse(retrofit2.Response<List<unibo.progettotesi.json.planner.Response>> response) {
 				try{
-					if(response.body() != null /**/)
-						setDistance(onTheGoActivity, response.body().get(0).getLeg().get(0).getLength(), next);
+					if(response.body() != null && response.code() == 200) {
+						if (transport.equals("CAR"))
+							setDistance((OnTheGoActivity) activity, response.body().get(0).getLeg().get(0).getLength(), next);
+						else
+							((BusWaitingActivity) activity).setDistance(response.body().get(0).getLeg().get(0).getLength());
+					}
 				}catch (Exception e){
 					e.printStackTrace();
 				}
