@@ -15,6 +15,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:id="@+id/progressBar_newProfile"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="1"
+            android:indeterminate="false"
+            android:visibility="gone"/>
+
         <ImageButton
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -25,7 +35,8 @@
             style="?android:attr/borderlessButtonStyle"
             android:onClick="gpsClick"
             android:scaleType="center"
-            android:background="#80cbc4"/>
+            android:background="#80cbc4"
+            />
 
         <ImageButton
             android:layout_width="match_parent"

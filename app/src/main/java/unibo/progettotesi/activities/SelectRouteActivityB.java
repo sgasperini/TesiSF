@@ -1,11 +1,11 @@
 package unibo.progettotesi.activities;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.View;
 import android.widget.ListView;
 
 import java.util.List;
@@ -14,7 +14,6 @@ import unibo.progettotesi.R;
 import unibo.progettotesi.adapters.RoutesAdapter;
 import unibo.progettotesi.model.Profile;
 import unibo.progettotesi.model.Route;
-import unibo.progettotesi.utilities.Filler;
 import unibo.progettotesi.utilities.RouteFinder;
 import unibo.progettotesi.utilities.Time;
 
@@ -34,8 +33,6 @@ public class SelectRouteActivityB extends Activity {
 
 		routeFinder = new RouteFinder(profile.getStart(), profile.getEnd(), Time.now());
 		/*routeList = */routeFinder.calculateRoutes(this);
-
-
 	}
 
 	public static void selectRoute(Activity activity, Route route) {
@@ -53,11 +50,18 @@ public class SelectRouteActivityB extends Activity {
 		activity.finish();
 	}
 
+	@Override
+	protected void onDestroy() {
+		routeList.clear();
+		super.onDestroy();
+	}
+
 	public void setRouteList(List<Route> routeList){
 		this.routeList = routeList;
-		Filler.fillRoute(findViewById(R.id.favoriteStops), routeList.get(0), this);
+		findViewById(R.id.progressBar_selectRoute).setVisibility(View.GONE);
+		//Filler.fillRoute(findViewById(R.id.favoriteStops), routeList.get(0), this);
 
-		RoutesAdapter routesAdapter = new RoutesAdapter(this, R.layout.route_list_b, routeList.subList(1, routeList.size()));
+		RoutesAdapter routesAdapter = new RoutesAdapter(this, R.layout.route_list_b, routeList/*.subList(1, routeList.size())*/);
 		((ListView) findViewById(R.id.listView3)).setAdapter(routesAdapter);
 	}
 }

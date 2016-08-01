@@ -11,7 +11,7 @@ public class Response {
 
     @SerializedName("trips")
     @Expose
-    public List<Trip> trips = new ArrayList<Trip>();
+    public Trip trip;
 
 
 }

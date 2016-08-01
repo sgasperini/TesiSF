@@ -1,10 +1,10 @@
 package unibo.progettotesi.utilities;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.app.AlertDialog;
 import android.app.Service;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -15,11 +15,11 @@ import android.os.IBinder;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 
 public class LocationToolbox extends Service implements LocationListener {
-
-	private final Context mContext;
+	private final Activity activity;
 
 	// flag for GPS status
 	boolean isGPSEnabled = false;
@@ -43,14 +43,13 @@ public class LocationToolbox extends Service implements LocationListener {
 	// Declaring a Location Manager
 	protected LocationManager locationManager;
 
-	public LocationToolbox(Context context) {
-		this.mContext = context;
+	public LocationToolbox(Activity activity) {
+		this.activity = activity;
 		getLocation();
 	}
 
 	public static double distance(double lat1, double lat2, double lon1,
 								  double lon2, double el1, double el2) {
-
 		final int R = 6371;
 
 		Double latDistance = Math.toRadians(lat2 - lat1);
@@ -70,7 +69,23 @@ public class LocationToolbox extends Service implements LocationListener {
 
 	public Location getLocation() {
 		try {
-			locationManager = (LocationManager) mContext
+			if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+				if (ActivityCompat.shouldShowRequestPermissionRationale(activity,
+						Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+					// Show an expanation to the user *asynchronously* -- don't block
+					// this thread waiting for the user's response! After the user
+					// sees the explanation, try again to request the permission.
+
+				} else {
+					Log.wtf("LOCATION", "sto per chiedere i permessi");
+					ActivityCompat.requestPermissions(activity,
+							new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+							Constants.PERMISSION_LOCATION_REQUEST);
+				}
+				return null;
+			}
+			locationManager = (LocationManager) activity
 					.getSystemService(LOCATION_SERVICE);
 
 			// getting GPS status
@@ -121,16 +136,6 @@ public class LocationToolbox extends Service implements LocationListener {
 						}
 					}
 				}
-				if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-					// TODO: Consider calling
-					//    ActivityCompat#requestPermissions
-					// here to request the missing permissions, and then overriding
-					//   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-					//                                          int[] grantResults)
-					// to handle the case where the user grants the permission. See the documentation
-					// for ActivityCompat#requestPermissions for more details.
-					return null;
-				}
 			}
 
 		} catch (Exception e) {
@@ -140,23 +145,22 @@ public class LocationToolbox extends Service implements LocationListener {
 		return location;
 	}
 
+
+
 	/**
 	 * Stop using GPS listener
 	 * Calling this function will stop using GPS in your app
 	 * */
 	public void stopUsingGPS() {
 		if (locationManager != null) {
-			if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-				// TODO: Consider calling
-				//    ActivityCompat#requestPermissions
-				// here to request the missing permissions, and then overriding
-				//   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-				//                                          int[] grantResults)
-				// to handle the case where the user grants the permission. See the documentation
-				// for ActivityCompat#requestPermissions for more details.
-				return;
+			try{
+				if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+					//return;
+				}
+				locationManager.removeUpdates(LocationToolbox.this);
+			}catch (Exception e){
+				//e.printStackTrace();
 			}
-			locationManager.removeUpdates(LocationToolbox.this);
 		}
 	}
 
@@ -197,7 +201,7 @@ public class LocationToolbox extends Service implements LocationListener {
 	 * On pressing Settings button will lauch Settings Options
 	 * */
 	public void showSettingsAlert(){
-		AlertDialog.Builder alertDialog = new AlertDialog.Builder(mContext);
+		AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
 
 		// Setting Dialog Title
 		alertDialog.setTitle("Attenzione!");
@@ -209,7 +213,7 @@ public class LocationToolbox extends Service implements LocationListener {
 		alertDialog.setPositiveButton("Impostazioni", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog,int which) {
 				Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-				mContext.startActivity(intent);
+				activity.startActivity(intent);
 			}
 		});
 

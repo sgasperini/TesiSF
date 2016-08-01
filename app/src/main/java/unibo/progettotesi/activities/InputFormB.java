@@ -23,11 +23,9 @@ import unibo.progettotesi.utilities.Constants;
 public class InputFormB extends AppCompatActivity {
 	private boolean start;
 	private boolean gps;
-	private boolean distance;
 	private boolean address;
 	private boolean name;
 	private boolean favorite;
-	private int walking;
 	private EditText editText;
 	private double latitude;
 	private double longitude;
@@ -40,16 +38,12 @@ public class InputFormB extends AppCompatActivity {
 
 		start = getIntent().getBooleanExtra("Start", false);
 		gps = getIntent().getBooleanExtra("GPS", false);
-		distance = getIntent().getBooleanExtra("Distance", false);
 		address = getIntent().getBooleanExtra("Address", false);
 		name = getIntent().getBooleanExtra("Name", false);
 		favorite = getIntent().getBooleanExtra("Favorite", false);
 
 		editText = (EditText) findViewById(R.id.inputEditText);
-		if(distance){
-			editText.setHint(Constants.DISTANCE_INPUT_HINT);
-			this.setTitle("Distanza");
-		}else if(address){
+		if(address){
 			latitude = 0;
 			longitude = 0;
 			editText.setHint(Constants.ADDRESS_INPUT_HINT);
@@ -65,10 +59,8 @@ public class InputFormB extends AppCompatActivity {
 	}
 
 	public void confirmInput(View v){
-		if(distance){
-			setDistance();
-		}else if(address){
-			setAddress();
+		if(address){
+			setAddress(1);
 		}else if(name){
 			setName();
 		}
@@ -101,29 +93,35 @@ public class InputFormB extends AppCompatActivity {
 
 	//set OnKeyListener sull'EditText
 
-	private void setAddress(){
+	private void setAddress(int cont){
 		//leggerlo ad alta voce, poi controllare che ritorni una posizione reale, chiedere quanto vuol camminare
-		addressToCoordinates();
+		if(addressToCoordinates()) {
 
-		location = new Location(latitude, longitude, editText.getText().toString());
+			location = new Location(latitude, longitude, editText.getText().toString());
 
-		saveLocation();
+			saveLocation();
 
-		Intent intent = new Intent(this, InputFormB.class);
-		intent.putExtra("Start", start);
-		intent.putExtra("Distance", true);
-		startActivity(intent);
-		finish();
+			askFavorite();
+
+		}else
+			if(cont < 4)
+				setAddress(cont+1);
 	}
 
-	private void addressToCoordinates() {
+	private boolean addressToCoordinates() {
+		findViewById(R.id.progressBar_inputForm).setVisibility(View.VISIBLE);
+		findViewById(R.id.inputEditText).setVisibility(View.GONE);
+		findViewById(R.id.confirm).setVisibility(View.GONE);
+		findViewById(R.id.confirm).setClickable(false);
+
 		Geocoder coder = new Geocoder(this);
 		List<Address> address;
+		boolean result;
 
 		try {
-			address = coder.getFromLocationName(editText.getText().toString(), 20, 44.341885, 11.205312, 44.622102, 11.668971);	//Marzabotto - Molinella
+			address = coder.getFromLocationName(editText.getText().toString(), 1);
 			if (address == null) {
-				return;
+				result = false;
 			}
 			Address location = address.get(0);
 			location.getLatitude();
@@ -133,46 +131,25 @@ public class InputFormB extends AppCompatActivity {
 			longitude = location.getLongitude();
 
 			Log.wtf("COORDINATES FROM ADDRESS", latitude + " - " + longitude);
+			result = true;
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			result = false;
 		}
+
+		findViewById(R.id.progressBar_inputForm).setVisibility(View.GONE);
+		findViewById(R.id.inputEditText).setVisibility(View.VISIBLE);
+		findViewById(R.id.confirm).setVisibility(View.VISIBLE);
+		findViewById(R.id.confirm).setClickable(true);
+
+		return result;
 	}
 
 	private void saveLocation() {
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 		SharedPreferences.Editor editor = preferences.edit();
 
-		if(start)
-			editor.putString("StartLocation", location.savingString());
-		else
-			editor.putString("EndLocation", location.savingString());
-
-		editor.commit();
-	}
-
-	private void setDistance(){
-		//leggerla ad alta voce, poi controllare che sia un numero
-
-		walking = Integer.parseInt(((EditText) findViewById(R.id.inputEditText)).getText().toString());
-
-		savePlaceWithDistance();
-
-		askFavorite();
-	}
-
-	private void savePlaceWithDistance() {
-		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		SharedPreferences.Editor editor = preferences.edit();
-
-		Location location;
-		if(start)
-			location = Location.getLocationFromString(preferences.getString("StartLocation", ""));
-		else
-			location = Location.getLocationFromString(preferences.getString("EndLocation", ""));
-
 		Place place = new Place(location);
-		place.setWalking(walking);
-
 		if(start)
 			editor.putString("StartTempPlace", place.savingString());
 		else

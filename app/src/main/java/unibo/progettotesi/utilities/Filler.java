@@ -50,7 +50,7 @@ public class Filler {
 		RealTimeTracker.setDistanceTo(distance, leg.getStartStop());
 		startStop.setText(leg.getStartStop().getName());
 		startTime.setText("Previsto: " + leg.getStartTime().toString());
-		line.setText(leg.getLine().getName());
+		line.setText("Linea: " + leg.getLine().getName());
 		stops.setText(leg.getInterStops().size() + " fermate");
 		endStop.setText(leg.getEndStop().getName());
 		endTime.setText("Previsto: " + leg.getEndTime().toString());

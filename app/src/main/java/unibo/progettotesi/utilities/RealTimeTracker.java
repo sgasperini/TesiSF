@@ -93,7 +93,7 @@ public class RealTimeTracker {
 		});
 	}
 
-	public static void calculateWalkingDistance(BusWaitingActivity activity, android.location.Location location, Location locationS) {
+	public static void calculateWalkingDistance(Activity activity, android.location.Location location, Location locationS) {
 		calculateDistance(activity, location, locationS, true, "WALK");
 	}
 
@@ -135,48 +135,46 @@ public class RealTimeTracker {
 
 		Call<Response> queryResponseCall = service.requestStops(new Request(
 				date, (first ? currentLeg.getDirection() : (currentLeg.getDirection() == 0 ? 1 : 0)), currentLeg.getLine().getName(),
-				currentLeg.getStartStop().getCode() + "", 2, currentLeg.getEndStop().getCode() + "",
+				currentLeg.getStartStop().getCode() + "", 1, currentLeg.getEndStop().getCode() + "",
 				time));
 
-		queryResponseCall.enqueue(new Callback<Response>(){
+			queryResponseCall.enqueue(new Callback<Response>(){
 
-			@Override
-			public void onResponse(retrofit2.Response<Response> response) {
-				try{
-					if(response.body() != null && response.code() == 200){
-						boolean found = false;
-						for (int i = 0; i < response.body().trips.size() && !found; i++) {
-							if(response.body().trips.get(i).tripId.equals(currentLeg.getLine().getTripID())) {
-								stopToInterStopConverter(response.body().trips.get(i).stops);
+				@Override
+				public void onResponse(retrofit2.Response<Response> response) {
+					try{
+						if(response.body() != null && response.code() == 200){
+							boolean found = false;
+							if(response.body().trip.tripId.equals(currentLeg.getLine().getTripID())) {
+								stopToInterStopConverter(response.body().trip.stops);
 								found = true;
 							}
+							if(!found && !antiLoop){
+								getStopsFromWeb(onTheGoActivity, currentLeg, !first);
+								antiLoop = true;
+								failed = false;
+							}
+						}else if(response.body() == null && response.code() == 200){
+							if(!antiLoop){
+								getStopsFromWeb(onTheGoActivity, currentLeg, !first);
+								antiLoop = true;
+								failed = false;
+							}
 						}
-						if(!found && !antiLoop){
-							getStopsFromWeb(onTheGoActivity, currentLeg, !first);
-							antiLoop = true;
-							failed = false;
-						}
-					}else if(response.body() == null && response.code() == 200){
-						if(!antiLoop){
-							getStopsFromWeb(onTheGoActivity, currentLeg, !first);
-							antiLoop = true;
-							failed = false;
-						}
+					}catch (Exception e){
+						e.printStackTrace();
 					}
-				}catch (Exception e){
-					e.printStackTrace();
 				}
-			}
 
-			@Override
-			public void onFailure(Throwable t) {
-				t.printStackTrace();
-				if(!failed) {
-					failed = true;
-					getStopsFromWeb(onTheGoActivity, currentLeg, first);
+				@Override
+				public void onFailure(Throwable t) {
+					t.printStackTrace();
+					if(!failed) {
+						failed = true;
+						getStopsFromWeb(onTheGoActivity, currentLeg, first);
+					}
 				}
-			}
-		});
+			});
 	}
 
 	private void stopToInterStopConverter(List<unibo.progettotesi.json.getNextTripsResponse.Stop> stopsR){
@@ -238,15 +236,17 @@ public class RealTimeTracker {
 						if (transport.equals("CAR"))
 							setDistance((OnTheGoActivity) activity, response.body().get(0).getLeg().get(0).getLength(), next);
 						else
-							((BusWaitingActivity) activity).setDistance(response.body().get(0).getLeg().get(0).getLength());
+							((Walking) activity).setDistance(response.body().get(0).getLeg().get(0).getLength());
 					}
 				}catch (Exception e){
+					((Walking) activity).failureDistance();
 					e.printStackTrace();
 				}
 			}
 
 			@Override
 			public void onFailure(Throwable t) {
+				((Walking) activity).failureDistance();
 				t.printStackTrace();
 			}
 		});

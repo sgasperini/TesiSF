@@ -4,10 +4,10 @@ Da sistemare:
 - quando hai due autobus da prendere e uno parte nel giorno dopo (dopo mezzanotte) sbalena (salvare la data di ogni leg)
 - beta3 di Retrofit.........
 - rilevazione partenza sbagliata o pressione salgo quando già salito da un tot
+- progress bar delle conversioni coodrinate e indirizzo
 
 da fare prossima volta
-- leg più intelligente per gestire il cammino pure
-- aggiungere la camminata (metri) alle view
+- aggiungere la camminata (metri) alle view finale
 
 
 

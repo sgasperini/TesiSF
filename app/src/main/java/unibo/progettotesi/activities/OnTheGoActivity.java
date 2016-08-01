@@ -15,6 +15,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -22,13 +23,15 @@ import unibo.progettotesi.R;
 import unibo.progettotesi.model.Leg;
 import unibo.progettotesi.model.Route;
 import unibo.progettotesi.model.Stop;
+import unibo.progettotesi.utilities.Constants;
 import unibo.progettotesi.utilities.Filler;
 import unibo.progettotesi.utilities.HelloBus;
 import unibo.progettotesi.utilities.LocationToolbox;
 import unibo.progettotesi.utilities.RealTimeTracker;
 import unibo.progettotesi.utilities.Time;
+import unibo.progettotesi.utilities.Walking;
 
-public class OnTheGoActivity extends Activity implements HelloBus{
+public class OnTheGoActivity extends Activity implements HelloBus, Walking{
 	private Route route;
 	private Leg currentLeg;
 	private int nLeg;
@@ -41,7 +44,6 @@ public class OnTheGoActivity extends Activity implements HelloBus{
 	private TextView nStops;
 	private TextView minRemaining;
 	private TextView minTotalRemaining;
-	LocationToolbox locationToolbox;
 	private boolean isClose1;
 	private int oldd0;
 	private int oldd1;
@@ -54,24 +56,59 @@ public class OnTheGoActivity extends Activity implements HelloBus{
 	private boolean calculatedd1;
 	private CountDownTimer timer;
 	private String actualBus;
+	private LocationListener locationListener;
+	private LocationManager lm;
 
 	@Override
 	protected void onStart() {
 		super.onStart();
 
-		LocationListener locationListener = new MyLocationListener();
-		LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		locationListener = new MyLocationListener();
+		lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			// TODO: Consider calling
-			//    ActivityCompat#requestPermissions
-			// here to request the missing permissions, and then overriding
-			//   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-			//                                          int[] grantResults)
-			// to handle the case where the user grants the permission. See the documentation
-			// for ActivityCompat#requestPermissions for more details.
-			return;
+			if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+					Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+				// Show an expanation to the user *asynchronously* -- don't block
+				// this thread waiting for the user's response! After the user
+				// sees the explanation, try again to request the permission.
+
+			} else {
+				ActivityCompat.requestPermissions(this,
+						new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+						Constants.PERMISSION_LOCATION_REQUEST);
+			}
+		}else{
+			lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locationListener);
 		}
-		lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0, locationListener);
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode,
+										   String permissions[], int[] grantResults) {
+		switch (requestCode) {
+			case Constants.PERMISSION_LOCATION_REQUEST: {
+				// If request is cancelled, the result arrays are empty.
+				if (grantResults.length > 0
+						&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+					try {
+						if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+							return;
+						}
+						lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locationListener);
+					}catch(Exception e){
+						e.printStackTrace();
+					}
+
+				} else {
+					Toast.makeText(this, "Permesso accesso posizione negato. La posizione è necessaria per diverse funzionalità dell'app", Toast.LENGTH_SHORT).show();
+				}
+				return;
+			}
+
+			// other 'case' lines to check for other
+			// permissions this app might request
+		}
 	}
 
 	@Override
@@ -96,10 +133,17 @@ public class OnTheGoActivity extends Activity implements HelloBus{
 		minRemaining = (TextView) findViewById(R.id.minutesToGo_otg);
 		minTotalRemaining = (TextView) findViewById(R.id.timeToFinalDestination_otg);
 
+		findViewById(R.id.progressBar_otg).setVisibility(View.VISIBLE);
+		previousS.setVisibility(View.GONE);
+		nextS.setVisibility(View.GONE);
+		distance.setVisibility(View.GONE);
+		nStops.setVisibility(View.GONE);
+		minRemaining.setVisibility(View.GONE);
+
 		Filler.fillRoute(findViewById(R.id.route_otg), route, this);
 		findViewById(R.id.route_otg).setClickable(false);
 
-		line.setText(currentLeg.getLine().getName());
+		line.setText("Linea: " + currentLeg.getLine().getName());
 		//previousS
 		RealTimeTracker.setDistanceTo(distance, currentLeg.getEndStop());	//da rivedere
 		//nextS
@@ -107,8 +151,8 @@ public class OnTheGoActivity extends Activity implements HelloBus{
 		//minRemaining
 		//minTotalRemaining
 
-		LocationToolbox locationToolbox = new LocationToolbox(this);
-		locationToolbox.getLocation();
+	/*	LocationToolbox locationToolbox = new LocationToolbox(this);
+		locationToolbox.getLocation();*/
 
 		RealTimeTracker realTimeTracker = new RealTimeTracker();
 		realTimeTracker.getStopsFromWeb(this, currentLeg, true);
@@ -142,8 +186,8 @@ public class OnTheGoActivity extends Activity implements HelloBus{
 			intent.putExtra("NLeg", nLeg + 1);
 			startActivity(intent);
 		}
-		if(locationToolbox != null)
-			locationToolbox.stopUsingGPS();
+	/*	if(locationToolbox != null)
+			locationToolbox.stopUsingGPS();*/
 		finish();
 		timer.cancel();
 	}
@@ -156,8 +200,8 @@ public class OnTheGoActivity extends Activity implements HelloBus{
 	public void setETA(Time time, String bus) {
 		if(bus.equals(actualBus)){
 			if(stopsToGo != null) {
-				minRemaining.setText("Minuti a scendere:\n" + "stimati da satellite " + Time.getDifference(Time.now(), time) + "\nprevisti da orario " + Time.getDifference(Time.now(), stopsToGo.get(stopsToGo.size() - 1).getDepartureTime()));
-				minTotalRemaining.setText("Minuti a destinazione:\nstimati da satellite non più di " + (Time.getDifference(Time.now(), route.getEndTime()) + Time.getDifference(stopsToGo.get(stopsToGo.size() - 1).getDepartureTime(), time)) + "\nprevisti " + Time.getDifference(Time.now(), route.getEndTime()));
+				minRemaining.setText("Minuti a scendere:\n" + "da satellite " + Time.getDifference(Time.now(), time) + "\nda orario " + Time.getDifference(Time.now(), stopsToGo.get(stopsToGo.size() - 1).getDepartureTime()));
+				minTotalRemaining.setText("Minuti a destinazione:\nda satellite non più di " + (Time.getDifference(Time.now(), route.getEndTime()) + Time.getDifference(stopsToGo.get(stopsToGo.size() - 1).getDepartureTime(), time)) + "\nda orario " + Time.getDifference(Time.now(), route.getEndTime()));
 			}
 		}else
 			failure();
@@ -165,18 +209,27 @@ public class OnTheGoActivity extends Activity implements HelloBus{
 
 	public void failure(){
 		if(stopsToGo != null)
-			minRemaining.setText("Minuti a scendere:\nprevisti da orario " + Time.getDifference(Time.now(), stopsToGo.get(stopsToGo.size() - 1).getDepartureTime()));
-		minTotalRemaining.setText("Minuti a destinazione:\nprevisti " + Time.getDifference(Time.now(), route.getEndTime()));
+			minRemaining.setText("Minuti a scendere:\nda orario " + Time.getDifference(Time.now(), stopsToGo.get(stopsToGo.size() - 1).getDepartureTime()));
+		minTotalRemaining.setText("Minuti a destinazione:\nda orario " + Time.getDifference(Time.now(), route.getEndTime()));
 	}
 
 	public void setNewLeg(Leg currentLeg) {
 		this.currentLeg = currentLeg;
 		stopsToGo = currentLeg.getInterStops();
+
 		if(stopsToGo != null){
 			previousStop = stopsToGo.get(0);
 			stopsToGo.remove(0);
 			updateViews(null);
 		}
+
+		findViewById(R.id.progressBar_otg).setVisibility(View.GONE);
+		previousS.setVisibility(View.VISIBLE);
+		nextS.setVisibility(View.VISIBLE);
+		distance.setVisibility(View.VISIBLE);
+		nStops.setVisibility(View.VISIBLE);
+		minRemaining.setVisibility(View.VISIBLE);
+
 		getETA();
 	}
 
@@ -249,7 +302,11 @@ public class OnTheGoActivity extends Activity implements HelloBus{
 		oldd1 = 0;
 	}
 
+	@Override
+	public void setDistance(double length) {}
 
+	@Override
+	public void failureDistance() {}
 
 
 	private final class MyLocationListener implements LocationListener {

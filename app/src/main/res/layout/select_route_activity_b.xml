@@ -10,21 +10,29 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="unibo.progettotesi.activities.SelectRouteActivityB">
 
-    <include
+  <!--  <include
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         layout="@layout/route_list_b"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:id="@+id/favoriteStops"/>
+        android:id="@+id/favoriteStops"/>   -->
 
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/listView3"
-        android:layout_below="@+id/favoriteStops"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="10dp"/>
+        />
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBar_selectRoute"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:indeterminate="false"/>
 </RelativeLayout>

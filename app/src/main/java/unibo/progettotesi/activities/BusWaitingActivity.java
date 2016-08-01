@@ -15,40 +15,81 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import unibo.progettotesi.R;
 import unibo.progettotesi.model.Route;
+import unibo.progettotesi.utilities.Constants;
 import unibo.progettotesi.utilities.Filler;
 import unibo.progettotesi.utilities.HelloBus;
 import unibo.progettotesi.utilities.RealTimeTracker;
 import unibo.progettotesi.utilities.Time;
+import unibo.progettotesi.utilities.Walking;
 
-public class BusWaitingActivity extends Activity implements HelloBus{
+public class BusWaitingActivity extends Activity implements HelloBus, Walking {
 	private Route route;
 	private int nLeg;
 	private CountDownTimer timer;
 	private BusWaitingActivity busWaitingActivity;
 	private String bus = null;
+	private LocationListener locationListener;
+	private LocationManager lm;
+	private boolean failedDistance = false;
 
 	@Override
 	protected void onStart() {
 		super.onStart();
 
-		LocationListener locationListener = new WalkingLocationListener();
-		LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		locationListener = new WalkingLocationListener();
+		lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			// TODO: Consider calling
-			//    ActivityCompat#requestPermissions
-			// here to request the missing permissions, and then overriding
-			//   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-			//                                          int[] grantResults)
-			// to handle the case where the user grants the permission. See the documentation
-			// for ActivityCompat#requestPermissions for more details.
-			return;
+			if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+					Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+				// Show an expanation to the user *asynchronously* -- don't block
+				// this thread waiting for the user's response! After the user
+				// sees the explanation, try again to request the permission.
+
+			} else {
+				ActivityCompat.requestPermissions(this,
+						new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+						Constants.PERMISSION_LOCATION_REQUEST);
+			}
+		}else{
+			failureDistance();
+
+			lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locationListener);
 		}
-		lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locationListener);
 
 		busWaitingActivity = this;
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode,
+										   String permissions[], int[] grantResults) {
+		switch (requestCode) {
+			case Constants.PERMISSION_LOCATION_REQUEST: {
+				// If request is cancelled, the result arrays are empty.
+				if (grantResults.length > 0
+						&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+					try {
+						if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+							return;
+						}
+						lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locationListener);
+					}catch(Exception e){
+						e.printStackTrace();
+					}
+
+				} else {
+					Toast.makeText(BusWaitingActivity.this, "Permesso accesso posizione negato. La posizione è necessaria per diverse funzionalità dell'app", Toast.LENGTH_SHORT).show();
+				}
+				return;
+			}
+
+			// other 'case' lines to check for other
+			// permissions this app might request
+		}
 	}
 
 	@Override
@@ -123,6 +164,11 @@ public class BusWaitingActivity extends Activity implements HelloBus{
 				"Bus previsto alle: " + route.getLegs().get(0).getStartTime());
 	}
 
+	public void failureDistance(){
+		failedDistance = true;
+		((TextView) findViewById(R.id.firstLeg).findViewById(R.id.distance_leg)).setVisibility(View.GONE);
+	}
+
 	public void getOn(View view) {
 		//start next
 		Intent intent = new Intent(this, OnTheGoActivity.class);
@@ -146,6 +192,10 @@ public class BusWaitingActivity extends Activity implements HelloBus{
 	}
 
 	public void setDistance(double length) {
+		if(failedDistance) {
+			failedDistance = false;
+			((TextView) findViewById(R.id.firstLeg).findViewById(R.id.distance_leg)).setVisibility(View.VISIBLE);
+		}
 		((TextView) findViewById(R.id.firstLeg).findViewById(R.id.distance_leg)).setText((int) length + " metri");
 	}
 

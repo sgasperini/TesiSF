@@ -53,7 +53,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="per arrivare a"
-        android:id="@+id/textView24"
+        android:id="@+id/walkingInfo_dest"
         android:layout_below="@+id/walking_dest"
         android:layout_centerHorizontal="true"/>
 
@@ -63,7 +63,7 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Preferito/Indirizzo"
         android:id="@+id/destination_dest"
-        android:layout_below="@+id/textView24"
+        android:layout_below="@+id/walkingInfo_dest"
         android:layout_centerHorizontal="true"
         android:gravity="center_horizontal"
         android:textSize="40dp"/>
