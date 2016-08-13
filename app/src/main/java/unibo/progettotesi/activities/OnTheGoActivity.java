@@ -11,8 +11,10 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,7 +33,7 @@ import unibo.progettotesi.utilities.RealTimeTracker;
 import unibo.progettotesi.utilities.Time;
 import unibo.progettotesi.utilities.Walking;
 
-public class OnTheGoActivity extends Activity implements HelloBus, Walking{
+public class OnTheGoActivity extends Activity implements HelloBus, Walking {
 	private Route route;
 	private Leg currentLeg;
 	private int nLeg;
@@ -58,11 +60,13 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking{
 	private String actualBus;
 	private LocationListener locationListener;
 	private LocationManager lm;
+	private boolean updates;
 
 	@Override
 	protected void onStart() {
 		super.onStart();
 
+		updates = false;
 		locationListener = new MyLocationListener();
 		lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -78,8 +82,11 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking{
 						new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
 						Constants.PERMISSION_LOCATION_REQUEST);
 			}
-		}else{
-			lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locationListener);
+		} else {
+			if(!updates) {
+				lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, locationListener);
+				updates = true;
+			}
 		}
 	}
 
@@ -95,8 +102,11 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking{
 						if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 							return;
 						}
-						lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locationListener);
-					}catch(Exception e){
+						if(!updates) {
+							lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, locationListener);
+							updates = true;
+						}
+					} catch (Exception e) {
 						e.printStackTrace();
 					}
 
@@ -145,7 +155,7 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking{
 
 		line.setText("Linea: " + currentLeg.getLine().getName());
 		//previousS
-		RealTimeTracker.setDistanceTo(distance, currentLeg.getEndStop());	//da rivedere
+		RealTimeTracker.setDistanceTo(distance, currentLeg.getEndStop());    //da rivedere
 		//nextS
 		//nStops
 		//minRemaining
@@ -157,14 +167,14 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking{
 		RealTimeTracker realTimeTracker = new RealTimeTracker();
 		realTimeTracker.getStopsFromWeb(this, currentLeg, true);
 
-	//	Log.wtf("TEST STOPS OTG", currentLeg.getInterStops().get(1).getName());
+		//	Log.wtf("TEST STOPS OTG", currentLeg.getInterStops().get(1).getName());
 
 		failure();
 
 		timer = new CountDownTimer(500000000, 30000) {
 
 			public void onTick(long millisUntilFinished) {
-				if(actualBus != null)
+				if (actualBus != null)
 					getETA();
 				else
 					failure();
@@ -177,11 +187,11 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking{
 		timer.start();
 	}
 
-	public void getOff(View view){
-		if(nLeg == (route.getLegs().size() - 1)){
+	public void getOff(View view) {
+		if (nLeg == (route.getLegs().size() - 1)) {
 			Intent intent = new Intent(this, DestinationActivityB.class);
 			startActivity(intent);
-		}else{
+		} else {
 			Intent intent = new Intent(this, BusWaitingActivity.class);
 			intent.putExtra("NLeg", nLeg + 1);
 			startActivity(intent);
@@ -198,17 +208,17 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking{
 
 	@Override
 	public void setETA(Time time, String bus) {
-		if(bus.equals(actualBus)){
-			if(stopsToGo != null) {
+		if (bus.equals(actualBus)) {
+			if (stopsToGo != null) {
 				minRemaining.setText("Minuti a scendere:\n" + "da satellite " + Time.getDifference(Time.now(), time) + "\nda orario " + Time.getDifference(Time.now(), stopsToGo.get(stopsToGo.size() - 1).getDepartureTime()));
 				minTotalRemaining.setText("Minuti a destinazione:\nda satellite non più di " + (Time.getDifference(Time.now(), route.getEndTime()) + Time.getDifference(stopsToGo.get(stopsToGo.size() - 1).getDepartureTime(), time)) + "\nda orario " + Time.getDifference(Time.now(), route.getEndTime()));
 			}
-		}else
+		} else
 			failure();
 	}
 
-	public void failure(){
-		if(stopsToGo != null)
+	public void failure() {
+		if (stopsToGo != null)
 			minRemaining.setText("Minuti a scendere:\nda orario " + Time.getDifference(Time.now(), stopsToGo.get(stopsToGo.size() - 1).getDepartureTime()));
 		minTotalRemaining.setText("Minuti a destinazione:\nda orario " + Time.getDifference(Time.now(), route.getEndTime()));
 	}
@@ -217,7 +227,7 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking{
 		this.currentLeg = currentLeg;
 		stopsToGo = currentLeg.getInterStops();
 
-		if(stopsToGo != null){
+		if (stopsToGo != null) {
 			previousStop = stopsToGo.get(0);
 			stopsToGo.remove(0);
 			updateViews(null);
@@ -236,33 +246,50 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking{
 	private void updateViews(Location location) {
 		previousS.setText(previousStop.getName());
 		nextS.setText(stopsToGo.get(0).getName());
-		nStops.setText("Fermate a scendere: " + stopsToGo.size());
-		if(location == null)
+		nStops.setText("Fermate a scendere: " + (stopsToGo.size() - 1));
+		if (location == null)
 			distance.setText("Metri: " + (int) LocationToolbox.distance(previousStop.getLocation().getLatitude(), stopsToGo.get(0).getLocation().getLatitude(), previousStop.getLocation().getLongitude(), stopsToGo.get(0).getLocation().getLongitude(), 0.0, 0.0));
 		else
 			distance.setText("Metri: " + (int) LocationToolbox.distance(location.getLatitude(), stopsToGo.get(0).getLocation().getLatitude(), location.getLongitude(), stopsToGo.get(0).getLocation().getLongitude(), 0.0, 0.0));
 	}
 
-	private void locationUpdated(Location location){
-		if(stopsToGo != null) {
+	private void locationUpdated(Location location) {
+		if (stopsToGo != null && stopsToGo.size() > 1) {
 			passingCondition(location);
 			updateViews(location);
+		} else if (stopsToGo != null && stopsToGo.size() == 1) {
+			updateViews(location);
+			((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(200);
+			Toast.makeText(OnTheGoActivity.this, "SCENDI ALLA PROSSIMA!", Toast.LENGTH_SHORT).show();
+			Log.wtf("RINGRAZIA IL LOG", "SCENDI ALLA PROSSIMA!");
 		}
 	}
 
 	private void passingCondition(Location location) {
 		int d0 = ((int) LocationToolbox.distance(location.getLatitude(), stopsToGo.get(0).getLocation().getLatitude(), location.getLongitude(), stopsToGo.get(0).getLocation().getLongitude(), 0.0, 0.0));
-		int d1 = ((int) LocationToolbox.distance(location.getLatitude(), stopsToGo.get(1).getLocation().getLatitude(), location.getLongitude(), stopsToGo.get(1).getLocation().getLongitude(), 0.0, 0.0));
+		int d1;
+		if (stopsToGo.size() != 1)
+			d1 = ((int) LocationToolbox.distance(location.getLatitude(), stopsToGo.get(1).getLocation().getLatitude(), location.getLongitude(), stopsToGo.get(1).getLocation().getLongitude(), 0.0, 0.0));
+		else
+			d1 = -100;
 
-		isClose(d0 < 20, (int) location.getAccuracy());
-		gettingCloseNext(location, d0, d1);
+		Log.wtf("FERMATE", "\td0 = " + d0 + " d1 = " + d1 + " acc = " + (int) location.getAccuracy());
+
+		if (d0 < 20) {
+			isClose((int) location.getAccuracy());
+		}/*else{
+			isClose1 = false;
+		}*/
+		if (d1 > 0)
+			gettingCloseNext(location, d0, d1);
 	}
 
 	private void gettingCloseNext(Location location, int d0, int d1) {
-		if(d0 > oldd0 && d1 < oldd1){
+		if (d0 > oldd0 && d1 < oldd1) {
+			Log.wtf("FERMATE", "\t\td0 = " + d0 + " oldd0 = " + oldd0 + " d1 = " + d1 + " oldd1 = " + oldd1);
 			oldd0 = d0;
 			oldd1 = d1;
-			if(gettingClose1){
+			if (gettingClose1) {
 				calculatedd1 = false;
 				roadDistance(location);
 				return;
@@ -281,20 +308,20 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking{
 		RealTimeTracker.calculateDistances(this, location, stopsToGo.get(0).getLocation(), stopsToGo.get(1).getLocation());
 	}
 
-	private void isClose(boolean d, int acc) {		//è a meno di 20m con precisione di max 20m
-		if(acc < 20 && d){
-			if(isClose1)
-				stopPassed();
-			isClose1 = true;
-		}else{
-			if(!d)
-				isClose1 = false;
+	private void isClose(int acc) {        //è a meno di 20m con precisione di max 20m
+		if (acc < 20) {
+			Log.wtf("FERMATE", "\t\t\tisClose, acc = " + acc);
+			//if(isClose1)
+			stopPassed();
+			//isClose1 = true;
 		}
 	}
 
 	private void stopPassed() {
+		Log.wtf("FERMATE", previousStop.getName() + " -> " + stopsToGo.get(0).getName());
 		previousStop = stopsToGo.get(0);
 		stopsToGo.remove(0);
+		// SI METTE UN CONTROLLO SE è VUOTO DOVEVI SCENDERE
 		isClose1 = false;
 		gettingClose1 = false;
 		roadDistance1 = false;
@@ -303,10 +330,12 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking{
 	}
 
 	@Override
-	public void setDistance(double length) {}
+	public void setDistance(double length) {
+	}
 
 	@Override
-	public void failureDistance() {}
+	public void failureDistance() {
+	}
 
 
 	private final class MyLocationListener implements LocationListener {
@@ -338,24 +367,27 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking{
 	}
 
 	public void setRoadd0(int roadd0) {
+		Log.wtf("FERMATE", "\t\t\troadd0 = " + roadd0);
+		oldRoadd0 = this.roadd0;
 		this.roadd0 = roadd0;
 		compare();
 	}
 
 	private void compare() {
-		if(!calculatedd1)
+		if (!calculatedd1)
 			calculatedd1 = true;
-		else{
-			if(roadDistance1){
-				if(roadd0 > oldRoadd0 && roadd1 < oldRoadd1) {
+		else {
+			if (roadDistance1) {
+				Log.wtf("FERMATE", "\t\t\troadd0 = " + roadd0 + " oldRoadd0 = " + oldRoadd0 + " roadd1 = " + roadd1 + " oldRoadd1 = " + oldRoadd1);
+				if (roadd0 > oldRoadd0 && roadd1 < oldRoadd1) {
 					stopPassed();
 					updateViews(null);
 				}
-			}else {
+			} else {
 				roadDistance1 = true;
 				calculatedd1 = false;
-				oldRoadd0 = roadd0;
-				oldRoadd1 = roadd1;
+				/*oldRoadd0 = roadd0;
+				oldRoadd1 = roadd1;*/
 			}
 		}
 	}
@@ -365,6 +397,8 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking{
 	}
 
 	public void setRoadd1(int roadd1) {
+		Log.wtf("FERMATE", "\t\t\troadd1 = " + roadd1);
+		oldRoadd1 = this.roadd1;
 		this.roadd1 = roadd1;
 		compare();
 	}
@@ -372,6 +406,19 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking{
 	@Override
 	protected void onDestroy() {
 		timer.cancel();
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			//
+		}else
+			lm.removeUpdates(locationListener);
 		super.onDestroy();
 	}
+
+	 public void onBackPressed(){
+		 timer.cancel();
+		 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			 //
+		 }else
+			 lm.removeUpdates(locationListener);
+		 super.onBackPressed();
+	 }
 }

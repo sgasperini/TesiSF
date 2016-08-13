@@ -5,11 +5,11 @@ Da sistemare:
 - beta3 di Retrofit.........
 - rilevazione partenza sbagliata o pressione salgo quando già salito da un tot
 - progress bar delle conversioni coodrinate e indirizzo
+- sei un bus in ritardo, minuti a scendere da orario può negativo
 
 da fare prossima volta
-- aggiungere la camminata (metri) alle view finale
 
 
 
 problemi esterni
-- ogni tanto si va in socket timeout non si sa perché forse problemi di internet
+- ogni tanto si va in socket timeout non si sa perché forse problemi di internet, pare vero

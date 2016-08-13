@@ -94,7 +94,7 @@ public class RealTimeTracker {
 	}
 
 	public static void calculateWalkingDistance(Activity activity, android.location.Location location, Location locationS) {
-		calculateDistance(activity, location, locationS, true, "WALK");
+		calculateDistance(activity, location, locationS, true, "WALK", false);
 	}
 
 	public interface RequestETA {
@@ -209,11 +209,11 @@ public class RealTimeTracker {
 	}
 
 	public static void calculateDistances(OnTheGoActivity onTheGoActivity, android.location.Location location, Location locationS0, Location locationS1) {
-		calculateDistance(onTheGoActivity, location, locationS0, true, "CAR");
-		calculateDistance(onTheGoActivity, location, locationS1, false, "CAR");
+		calculateDistance(onTheGoActivity, location, locationS0, true, "WALK", true);
+		calculateDistance(onTheGoActivity, location, locationS1, false, "WALK", true);
 	}
 
-	private static void calculateDistance(final Activity activity, android.location.Location location, Location locationS, final boolean next, final String transport) {
+	private static void calculateDistance(final Activity activity, android.location.Location location, Location locationS, final boolean next, final String transport, final boolean otg) {
 		Retrofit retrofit = new Retrofit.Builder()      //create the retrofit builder
 				.baseUrl(Constants.PLANNING_BASE_URL)
 				.addConverterFactory(GsonConverterFactory.create())	//parse Gson string
@@ -233,20 +233,22 @@ public class RealTimeTracker {
 			public void onResponse(retrofit2.Response<List<unibo.progettotesi.json.planner.Response>> response) {
 				try{
 					if(response.body() != null && response.code() == 200) {
-						if (transport.equals("CAR"))
+						if (otg)
 							setDistance((OnTheGoActivity) activity, response.body().get(0).getLeg().get(0).getLength(), next);
 						else
 							((Walking) activity).setDistance(response.body().get(0).getLeg().get(0).getLength());
 					}
 				}catch (Exception e){
-					((Walking) activity).failureDistance();
+					if (!otg)
+						((Walking) activity).failureDistance();
 					e.printStackTrace();
 				}
 			}
 
 			@Override
 			public void onFailure(Throwable t) {
-				((Walking) activity).failureDistance();
+				if (!otg)
+					((Walking) activity).failureDistance();
 				t.printStackTrace();
 			}
 		});

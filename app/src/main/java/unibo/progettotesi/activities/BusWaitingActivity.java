@@ -152,8 +152,8 @@ public class BusWaitingActivity extends Activity implements HelloBus, Walking {
 		int difference = Time.getDifference(route.getLegs().get(0).getStartTime(), time);
 		if(difference > -5){
 			((TextView) findViewById(R.id.firstLeg).findViewById(R.id.busStartRealTime_leg)).setText(
-					"Bus previsto alle: " + route.getLegs().get(0).getStartTime() + "\nstimato da satellite in " +
-							(difference > 0 ? "ritardo" : "anticipo") + " di " + Math.abs(difference) + " minuti (" + time + ")");
+					"Bus previsto alle: " + route.getLegs().get(0).getStartTime() + "\nstimato da satellite in " + (difference == 0 ? "orario" :
+							(difference > 0 ? "ritardo" : "anticipo") + " di " + Math.abs(difference) + " minuti (" + time + ")"));
 			this.bus = bus;
 		}else
 			failure();
