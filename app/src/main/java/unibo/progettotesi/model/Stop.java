@@ -42,6 +42,16 @@ public class Stop {
 		this.lines = new ArrayList<Line>();
 	}
 
+	public Stop(Location location, int code, String name, String site, Time departureTime) {
+		this.location = location;
+		this.code = code;
+		this.name = name;
+		this.site = site;
+		this.departureTime = departureTime;
+		this.sisters = new ArrayList<Stop>();
+		this.lines = new ArrayList<Line>();
+	}
+
 	public Time getDepartureTime() {
 		return departureTime;
 	}
@@ -121,5 +131,14 @@ public class Stop {
 	public static Stop getStopFromString(String saved){
 		StringTokenizer stringTokenizer = new StringTokenizer(saved, "®");
 		return new Stop(Location.getLocationFromString(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken()), stringTokenizer.nextToken(), stringTokenizer.nextToken());
+	}
+
+	public String savingStringEmergency() {
+		return location.savingString() + "®" + code + "®" + name + "®" + site + "®" + departureTime.savingString();
+	}
+
+	public static Stop getStopFromStringEmergency(String saved){
+		StringTokenizer stringTokenizer = new StringTokenizer(saved, "®");
+		return new Stop(Location.getLocationFromString(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken()), stringTokenizer.nextToken(), stringTokenizer.nextToken(), Time.getTimeFromString(stringTokenizer.nextToken()));
 	}
 }

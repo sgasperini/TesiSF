@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import unibo.progettotesi.json.getNextTripsRequest.Date;
 import unibo.progettotesi.utilities.Time;
 
 public class Leg {
@@ -12,6 +13,8 @@ public class Leg {
 	private Line line;
 	private Time startTime;
 	private Time endTime;
+	private Date startDate;
+	private Date endDate;
 	private List<Stop> interStops;
 	private int direction;
 
@@ -40,6 +43,18 @@ public class Leg {
 		this.startTime = startTime;
 		this.endTime = endTime;
 		this.direction = direction;
+		interStops = new ArrayList<Stop>();
+	}
+
+	public Leg(Stop startStop, Stop endStop, Line line, Time startTime, Time endTime, int direction, Date startDate, Date endDate) {
+		this.startStop = startStop;
+		this.endStop = endStop;
+		this.line = line;
+		this.startTime = startTime;
+		this.endTime = endTime;
+		this.direction = direction;
+		this.startDate = startDate;
+		this.endDate = endDate;
 		interStops = new ArrayList<Stop>();
 	}
 
@@ -103,12 +118,35 @@ public class Leg {
 		interStops.add(newStop);
 	}
 
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
 	public String savingString() {
-		return startStop.savingString() + "¬" + endStop.savingString() + "¬" + line.savingString() + "¬" + startTime.savingString() + "¬" + endTime.savingString() + "¬" + direction;
+		return startStop.savingString() + "¬" + endStop.savingString() + "¬" + line.savingString() + "¬" +
+				startTime.savingString() + "¬" + endTime.savingString() + "¬" + direction + "¬" +
+				startDate.getMonth() + "¬" + startDate.getYear() + "¬" + startDate.getDay() + "¬" +
+				endDate.getMonth() + "¬" + endDate.getYear() + "¬" + endDate.getDay();
 	}
 
 	public static Leg getLegFromString(String saved) {
 		StringTokenizer stringTokenizer = new StringTokenizer(saved, "¬");
-		return new Leg(Stop.getStopFromString(stringTokenizer.nextToken()), Stop.getStopFromString(stringTokenizer.nextToken()), Line.getLineFromString(stringTokenizer.nextToken()), Time.getTimeFromString(stringTokenizer.nextToken()), Time.getTimeFromString(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken()));
+		return new Leg(Stop.getStopFromString(stringTokenizer.nextToken()), Stop.getStopFromString(stringTokenizer.nextToken()),
+				Line.getLineFromString(stringTokenizer.nextToken()), Time.getTimeFromString(stringTokenizer.nextToken()),
+				Time.getTimeFromString(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken()),
+				new Date(Integer.parseInt(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken())),
+				new Date(Integer.parseInt(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken())));
 	}
 }

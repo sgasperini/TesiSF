@@ -1,6 +1,7 @@
 package unibo.progettotesi.utilities;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -84,6 +85,9 @@ public class RouteFinder {
 					if (response.body() != null && response.code() == 200){
 						convertResponseToRoutes(selectRouteActivityB, response.body());
 						Log.wtf("TEST PLANNING", response.body().get(0).getDuration() + "");
+					}else{
+						Log.wtf("PROBLEMI VARI", response.raw().message());
+						Toast.makeText(selectRouteActivityB, response.raw().message(), Toast.LENGTH_SHORT).show();
 					}
 				}catch (Exception e){
 					e.printStackTrace();

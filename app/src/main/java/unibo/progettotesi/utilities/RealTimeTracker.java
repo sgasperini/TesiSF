@@ -127,11 +127,8 @@ public class RealTimeTracker {
 
 		RequestStops service = retrofit.create(RequestStops.class);
 
-		Calendar calendar = Calendar.getInstance();
-
 		Time time = new Time(currentLeg.getStartTime().getHour(), currentLeg.getStartTime().getMinute(), 0);
-		Date date = new Date(calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR),
-				calendar.get(Calendar.DAY_OF_MONTH));
+		Date date = currentLeg.getStartDate();
 
 		Call<Response> queryResponseCall = service.requestStops(new Request(
 				date, (first ? currentLeg.getDirection() : (currentLeg.getDirection() == 0 ? 1 : 0)), currentLeg.getLine().getName(),

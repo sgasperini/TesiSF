@@ -20,6 +20,12 @@ public class Location {
 		this.address = address;
 	}
 
+	public Location(double latitude, double longitude) {
+		this.latitude = latitude;
+		this.longitude = longitude;
+		this.address = " ";
+	}
+
 	public String getAddress() {
 		return address;
 	}
@@ -50,6 +56,11 @@ public class Location {
 
 	public static Location getLocationFromString(String saved) {
 		StringTokenizer stringTokenizer = new StringTokenizer(saved, "ø");
-		return new Location(Double.parseDouble(stringTokenizer.nextToken()), Double.parseDouble(stringTokenizer.nextToken()), stringTokenizer.nextToken());
+		double lat = Double.parseDouble(stringTokenizer.nextToken());
+		double lon = Double.parseDouble(stringTokenizer.nextToken());
+		if(stringTokenizer.hasMoreTokens())
+			return new Location(lat, lon, stringTokenizer.nextToken());
+		else
+			return new Location(lat, lon);
 	}
 }

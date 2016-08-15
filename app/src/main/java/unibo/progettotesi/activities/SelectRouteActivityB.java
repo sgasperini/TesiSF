@@ -52,7 +52,8 @@ public class SelectRouteActivityB extends Activity {
 
 	@Override
 	protected void onDestroy() {
-		routeList.clear();
+		if(routeList != null)
+			routeList.clear();
 		super.onDestroy();
 	}
 

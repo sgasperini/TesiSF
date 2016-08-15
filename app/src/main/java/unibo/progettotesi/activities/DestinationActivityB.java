@@ -11,6 +11,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,19 +24,21 @@ import unibo.progettotesi.utilities.RealTimeTracker;
 import unibo.progettotesi.utilities.Walking;
 
 public class DestinationActivityB extends Activity implements Walking{
-	private LocationListener locationListener;
+	private LocationListener locationListener = new WalkingLocationListener();
 	private LocationManager lm;
 	private DestinationActivityB destinationActivityB;
 	private Route route;
 	private TextView meters;
 	private boolean failedDistance = false;
 	private TextView infoWalking;
+	private SharedPreferences sharedPreferences;
+	private SharedPreferences.Editor editor;
+	private boolean updates = false;
 
 	@Override
 	protected void onStart() {
 		super.onStart();
 
-		locationListener = new WalkingLocationListener();
 		lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			if (ActivityCompat.shouldShowRequestPermissionRationale(this,
@@ -53,7 +56,10 @@ public class DestinationActivityB extends Activity implements Walking{
 		}else{
 			failureDistance();
 
-			lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locationListener);
+			if (!updates) {
+				lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locationListener);
+				updates = true;
+			}
 		}
 
 		destinationActivityB = this;
@@ -71,7 +77,10 @@ public class DestinationActivityB extends Activity implements Walking{
 						if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 							return;
 						}
-						lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locationListener);
+						if (!updates) {
+							lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locationListener);
+							updates = true;
+						}
 					}catch(Exception e){
 						e.printStackTrace();
 					}
@@ -92,7 +101,9 @@ public class DestinationActivityB extends Activity implements Walking{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.destination_activity_b);
 
-		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+		editor = sharedPreferences.edit();
+
 		Profile profile = Profile.getProfileFromString(sharedPreferences.getString("CurrentProfile", ""));
 		route = Route.getRouteFromString(sharedPreferences.getString("CurrentRoute", ""));
 
@@ -147,6 +158,33 @@ public class DestinationActivityB extends Activity implements Walking{
 
 	@Override
 	protected void onDestroy() {
+		Log.wtf("DestinationActivity", "ON DESTROY");
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			//
+		}else if(lm != null){
+			Log.wtf("LOCATION UPDATES", "REMOVING DEST ON DESTROY");
+			lm.removeUpdates(locationListener);
+			lm = null;
+		}
+		if(locationListener != null)
+			locationListener = null;
+		editor.putString("CurrentRoute", "");
+		editor.commit();
 		super.onDestroy();
+	}
+
+	public void onBackPressed(){
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			//
+		}else if(lm != null){
+			Log.wtf("LOCATION UPDATES", "REMOVING DEST BACK");
+			lm.removeUpdates(locationListener);
+			lm = null;
+		}
+		if(locationListener != null)
+			locationListener = null;
+		editor.putString("CurrentRoute", "");
+		editor.commit();
+		super.onBackPressed();
 	}
 }

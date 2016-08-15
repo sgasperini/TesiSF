@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,15 +33,18 @@ public class BusWaitingActivity extends Activity implements HelloBus, Walking {
 	private CountDownTimer timer;
 	private BusWaitingActivity busWaitingActivity;
 	private String bus = null;
-	private LocationListener locationListener;
+	private LocationListener locationListener = new WalkingLocationListener();
 	private LocationManager lm;
 	private boolean failedDistance = false;
+	private SharedPreferences sharedPreferences;
+	private SharedPreferences.Editor editor;
+	private boolean otg;
+	private boolean updates = false;
 
 	@Override
 	protected void onStart() {
 		super.onStart();
 
-		locationListener = new WalkingLocationListener();
 		lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			if (ActivityCompat.shouldShowRequestPermissionRationale(this,
@@ -57,8 +61,10 @@ public class BusWaitingActivity extends Activity implements HelloBus, Walking {
 			}
 		}else{
 			failureDistance();
-
-			lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locationListener);
+			if (!updates) {
+				lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locationListener);
+				updates = true;
+			}
 		}
 
 		busWaitingActivity = this;
@@ -76,7 +82,10 @@ public class BusWaitingActivity extends Activity implements HelloBus, Walking {
 						if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 							return;
 						}
-						lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locationListener);
+						if (!updates) {
+							lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locationListener);
+							updates = true;
+						}
 					}catch(Exception e){
 						e.printStackTrace();
 					}
@@ -97,7 +106,10 @@ public class BusWaitingActivity extends Activity implements HelloBus, Walking {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_bus_waiting);
 
-		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+		otg = false;
+
+		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+		editor = sharedPreferences.edit();
 
 		route = Route.getRouteFromString(sharedPreferences.getString("CurrentRoute", ""));
 
@@ -150,7 +162,7 @@ public class BusWaitingActivity extends Activity implements HelloBus, Walking {
 	@Override
 	public void setETA(Time time, String bus) {
 		int difference = Time.getDifference(route.getLegs().get(0).getStartTime(), time);
-		if(difference > -5){
+		if(difference > -5 && difference < 45){
 			((TextView) findViewById(R.id.firstLeg).findViewById(R.id.busStartRealTime_leg)).setText(
 					"Bus previsto alle: " + route.getLegs().get(0).getStartTime() + "\nstimato da satellite in " + (difference == 0 ? "orario" :
 							(difference > 0 ? "ritardo" : "anticipo") + " di " + Math.abs(difference) + " minuti (" + time + ")"));
@@ -177,14 +189,44 @@ public class BusWaitingActivity extends Activity implements HelloBus, Walking {
 			intent.putExtra("Bus", bus);
 		startActivity(intent);
 
+		otg = true;
 		timer.cancel();
 		finish();
 	}
 
 	@Override
 	protected void onDestroy() {
+		Log.wtf("BusWaitingActivity", "ON DESTROY");
 		timer.cancel();
+		if(!otg){
+			editor.putString("CurrentRoute", "");
+			editor.commit();
+		}
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			//
+		}else if(lm != null){
+			Log.wtf("LOCATION UPDATES", "REMOVING BUSWAITING ON DESTROY");
+			lm.removeUpdates(locationListener);
+			lm = null;
+		}
+		if(locationListener != null)
+			locationListener = null;
 		super.onDestroy();
+	}
+
+	public void onBackPressed(){
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			//
+		}else if(lm != null){
+			Log.wtf("LOCATION UPDATES", "REMOVING BUSWAITING BACK");
+			lm.removeUpdates(locationListener);
+			lm = null;
+		}
+		if(locationListener != null)
+			locationListener = null;
+		editor.putString("CurrentRoute", "");
+		editor.commit();
+		super.onBackPressed();
 	}
 
 	private void getWalkingDistance(Location location){

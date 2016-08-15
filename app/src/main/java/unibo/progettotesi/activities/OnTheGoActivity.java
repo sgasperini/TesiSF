@@ -58,16 +58,16 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking {
 	private boolean calculatedd1;
 	private CountDownTimer timer;
 	private String actualBus;
-	private LocationListener locationListener;
+	private LocationListener locationListener = new MyLocationListener();;
 	private LocationManager lm;
-	private boolean updates;
+	private boolean updates = false;
+	private SharedPreferences sharedPreferences;
+	private SharedPreferences.Editor editor;
 
 	@Override
 	protected void onStart() {
 		super.onStart();
 
-		updates = false;
-		locationListener = new MyLocationListener();
 		lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			if (ActivityCompat.shouldShowRequestPermissionRationale(this,
@@ -83,7 +83,7 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking {
 						Constants.PERMISSION_LOCATION_REQUEST);
 			}
 		} else {
-			if(!updates) {
+			if (!updates) {
 				lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, locationListener);
 				updates = true;
 			}
@@ -126,7 +126,7 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_on_the_go);
 
-		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		route = Route.getRouteFromString(sharedPreferences.getString("CurrentRoute", ""));
 
 		actualBus = getIntent().getStringExtra("Bus");
@@ -164,6 +164,13 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking {
 	/*	LocationToolbox locationToolbox = new LocationToolbox(this);
 		locationToolbox.getLocation();*/
 
+		String lastStopS = getIntent().getStringExtra("LastStop");
+		Log.wtf("CrashDetector OTG stop", lastStopS);
+		if(lastStopS != null && !lastStopS.equals("")){
+			currentLeg.setStartStop(Stop.getStopFromStringEmergency(lastStopS));
+			currentLeg.setStartTime(currentLeg.getStartStop().getDepartureTime());
+		}
+
 		RealTimeTracker realTimeTracker = new RealTimeTracker();
 		realTimeTracker.getStopsFromWeb(this, currentLeg, true);
 
@@ -185,6 +192,8 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking {
 			}
 		};
 		timer.start();
+
+		editor = sharedPreferences.edit();
 	}
 
 	public void getOff(View view) {
@@ -198,6 +207,10 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking {
 		}
 	/*	if(locationToolbox != null)
 			locationToolbox.stopUsingGPS();*/
+
+		editor.putString("LastStop", "");
+		editor.commit();
+
 		finish();
 		timer.cancel();
 	}
@@ -320,6 +333,8 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking {
 	private void stopPassed() {
 		Log.wtf("FERMATE", previousStop.getName() + " -> " + stopsToGo.get(0).getName());
 		previousStop = stopsToGo.get(0);
+		editor.putString("LastStop", previousStop.savingStringEmergency());
+		editor.commit();
 		stopsToGo.remove(0);
 		// SI METTE UN CONTROLLO SE è VUOTO DOVEVI SCENDERE
 		isClose1 = false;
@@ -405,11 +420,20 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking {
 
 	@Override
 	protected void onDestroy() {
+		Log.wtf("OnTheGoActivity", "ON DESTROY");
 		timer.cancel();
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			//
-		}else
+		}else if(lm != null){
+			Log.wtf("LOCATION UPDATES", "REMOVING OTG ON DESTROY");
 			lm.removeUpdates(locationListener);
+			lm = null;
+		}
+		if(locationListener != null)
+			locationListener = null;
+		editor.putString("LastStop", "");
+		editor.putString("CurrentRoute", "");
+		editor.commit();
 		super.onDestroy();
 	}
 
@@ -417,8 +441,16 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking {
 		 timer.cancel();
 		 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			 //
-		 }else
+		 }else if(lm != null){
+			 Log.wtf("LOCATION UPDATES", "REMOVING OTG BACK");
 			 lm.removeUpdates(locationListener);
+			 lm = null;
+		 }
+		 if(locationListener != null)
+			 locationListener = null;
+		 editor.putString("LastStop", "");
+		 editor.putString("CurrentRoute", "");
+		 editor.commit();
 		 super.onBackPressed();
 	 }
 }

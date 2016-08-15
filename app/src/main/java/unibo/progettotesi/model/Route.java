@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import unibo.progettotesi.json.getNextTripsRequest.Date;
 import unibo.progettotesi.json.planner.Response;
 import unibo.progettotesi.utilities.Time;
 
@@ -193,9 +194,11 @@ public class Route {
 					int direction = Integer.parseInt(stringTokenizer.nextToken());
 					calendar.setTimeInMillis(legR.getStartime());
 					Time departure = new Time(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE));
+					Date startDate = new Date(calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR), calendar.get(Calendar.DAY_OF_MONTH));
 					calendar.setTimeInMillis(legR.getEndtime());
 					Time arrival = new Time(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE));
-					legs.add(new Leg(startSt, endSt, line, departure, arrival, direction));
+					Date endDate = new Date(calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR), calendar.get(Calendar.DAY_OF_MONTH));
+					legs.add(new Leg(startSt, endSt, line, departure, arrival, direction, startDate, endDate));
 				}else if(transportType != null && transportType.equals("WALK")){
 					minWalking = minWalking + (int) Math.round(legR.getDuration() / 60.0);
 				}
