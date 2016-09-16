@@ -4,8 +4,8 @@
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
 
     <application
         android:allowBackup="true"
@@ -13,44 +13,67 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.MainActivity"
+        <activity
+            android:name=".activities.MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-
         </activity>
-        <activity android:name=".activities.NewProfileActivityB"
+        <activity
+            android:name=".activities.NewProfileActivityB"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name=".activities.FavoritesProfileB"
+            android:label="Preferiti"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name=".activities.InputFormB"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name=".activities.NewTripActivityB"
+            android:label="Nuovo Viaggio"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name=".activities.SelectRouteActivityB"
+            android:label="Scegli Percorso"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name=".activities.BusWaitingActivity"
+            android:label="Alla Fermata"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name=".activities.OnTheGoActivity"
+            android:label="Sul Bus"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name=".activities.DestinationActivityB"
+            android:label="Verso Destinazione"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name=".activities.ProfileManagingActivityB"
+            android:label="Gestione Profili"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name=".activities.EditDeleteActivityB"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity android:name=".activities.EditActivityB"
                   android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".activities.FavoritesProfileB"
-                  android:screenOrientation="portrait"
-                  android:label="Preferiti">
-        </activity>
-        <activity android:name=".activities.InputFormB"
+        <activity android:name=".activities.EditNameProfile"
                   android:screenOrientation="portrait">
-        </activity>
-        <activity android:name=".activities.NewTripActivityB"
-                  android:screenOrientation="portrait"
-                  android:label="Nuovo Viaggio">
-        </activity>
-        <activity android:name=".activities.SelectRouteActivityB"
-                  android:screenOrientation="portrait"
-                  android:label="Scegli Percorso">
-        </activity>
-        <activity android:name=".activities.BusWaitingActivity"
-                  android:screenOrientation="portrait"
-                  android:label="Alla Fermata">
-        </activity>
-        <activity android:name=".activities.OnTheGoActivity"
-                  android:screenOrientation="portrait"
-                  android:label="Sul Bus">
-        </activity>
-        <activity android:name=".activities.DestinationActivityB"
-                  android:screenOrientation="portrait"
-                  android:label="Verso Destinazione">
         </activity>
     </application>
 

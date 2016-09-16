@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.preference.PreferenceManager;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -36,6 +37,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 	private Location location;
 	private Place place;
 	private LocationToolbox locationToolbox;
+	private TextToSpeech tts;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -52,10 +54,22 @@ public class NewProfileActivityB extends AppCompatActivity {
 			this.setTitle("Partenza");
 		else
 			this.setTitle("Destinazione");
+
+		tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+			@Override
+			public void onInit(int status) {
+				if(status != TextToSpeech.ERROR) {
+					tts.setLanguage(Locale.getDefault());
+				}
+			}
+		});
 	}
 
 	public void gpsClick(View v){
 		// verificare sia attivo (accenderlo), prendere la posizione e mostrarla come indirizzo chiedendo se si vuol salvare come preferito, comunque sia chiedere la distanza a piedi, poi chiamare la nuova activity
+		Toast.makeText(NewProfileActivityB.this, "GPS", Toast.LENGTH_SHORT).show();
+		tts.speak("GPS", TextToSpeech.QUEUE_FLUSH, null);
+		
 		findViewById(R.id.progressBar_newProfile).setVisibility(View.VISIBLE);
 		findViewById(R.id.gps).setVisibility(View.GONE);
 		findViewById(R.id.preferiti).setVisibility(View.GONE);
@@ -100,6 +114,10 @@ public class NewProfileActivityB extends AppCompatActivity {
 	public void favoritesClick(View v){
 		Intent intent = new Intent(this, FavoritesProfileB.class);
 		intent.putExtra("Start", start);
+
+		Toast.makeText(NewProfileActivityB.this, "Preferiti", Toast.LENGTH_SHORT).show();
+		tts.speak("Preferiti", TextToSpeech.QUEUE_FLUSH, null);
+		
 		startActivity(intent);
 		finish();
 	}
@@ -108,6 +126,10 @@ public class NewProfileActivityB extends AppCompatActivity {
 		Intent intent = new Intent(this, InputFormB.class);
 		intent.putExtra("Start", start);
 		intent.putExtra("Address", true);
+
+		tts.speak("Indirizzo", TextToSpeech.QUEUE_FLUSH, null);
+		Toast.makeText(NewProfileActivityB.this, "Indirizzo", Toast.LENGTH_SHORT).show();
+		
 		startActivity(intent);
 		finish();
 	}

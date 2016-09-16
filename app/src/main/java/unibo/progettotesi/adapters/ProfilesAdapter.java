@@ -12,8 +12,10 @@ import android.widget.TextView;
 import java.util.List;
 
 import unibo.progettotesi.R;
+import unibo.progettotesi.activities.EditDeleteActivityB;
 import unibo.progettotesi.activities.FavoritesProfileB;
 import unibo.progettotesi.activities.NewTripActivityB;
+import unibo.progettotesi.activities.ProfileManagingActivityB;
 import unibo.progettotesi.model.Place;
 import unibo.progettotesi.model.Profile;
 
@@ -21,12 +23,18 @@ import unibo.progettotesi.model.Profile;
 public class ProfilesAdapter extends ArrayAdapter<Profile> {
 	private int resource;
 	private NewTripActivityB newTripActivityB;
-	private boolean start;
+	private EditDeleteActivityB editDeleteActivityB;
 
 	public ProfilesAdapter(NewTripActivityB newTripActivityB, int _resource, List<Profile> items) {
 		super((Context) newTripActivityB, _resource, items);
 		resource = _resource;
 		this.newTripActivityB = newTripActivityB;
+	}
+
+	public ProfilesAdapter(EditDeleteActivityB editDeleteActivityB, int _resource, List<Profile> items) {
+		super((Context) editDeleteActivityB, _resource, items);
+		resource = _resource;
+		this.editDeleteActivityB = editDeleteActivityB;
 	}
 
 	@Override
@@ -54,7 +62,10 @@ public class ProfilesAdapter extends ArrayAdapter<Profile> {
 		relativeLayout.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				NewTripActivityB.selectProfile(newTripActivityB, profile);
+				if(newTripActivityB != null)
+					NewTripActivityB.selectProfile(newTripActivityB, profile);
+				else
+					EditDeleteActivityB.selectProfile(editDeleteActivityB, profile, pos);
 			}
 		});
 

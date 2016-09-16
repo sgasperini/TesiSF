@@ -12,11 +12,14 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Locale;
 
 import unibo.progettotesi.R;
 import unibo.progettotesi.model.Route;
@@ -40,6 +43,7 @@ public class BusWaitingActivity extends Activity implements HelloBus, Walking {
 	private SharedPreferences.Editor editor;
 	private boolean otg;
 	private boolean updates = false;
+	private TextToSpeech tts;
 
 	@Override
 	protected void onStart() {
@@ -153,6 +157,15 @@ public class BusWaitingActivity extends Activity implements HelloBus, Walking {
 
 		findViewById(R.id.secondLeg).findViewById(R.id.distance_leg).setVisibility(View.GONE);
 		findViewById(R.id.thirdLeg).findViewById(R.id.distance_leg).setVisibility(View.GONE);
+
+		tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+			@Override
+			public void onInit(int status) {
+				if(status != TextToSpeech.ERROR) {
+					tts.setLanguage(Locale.getDefault());
+				}
+			}
+		});
 	}
 
 	private void getETA() {
@@ -188,6 +201,9 @@ public class BusWaitingActivity extends Activity implements HelloBus, Walking {
 		if(bus != null)
 			intent.putExtra("Bus", bus);
 		startActivity(intent);
+
+		Toast.makeText(BusWaitingActivity.this, "Sali", Toast.LENGTH_SHORT).show();
+		tts.speak("Sali", TextToSpeech.QUEUE_FLUSH, null);
 
 		otg = true;
 		timer.cancel();

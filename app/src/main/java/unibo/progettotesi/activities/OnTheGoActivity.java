@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.View;
@@ -20,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
+import java.util.Locale;
 
 import unibo.progettotesi.R;
 import unibo.progettotesi.model.Leg;
@@ -63,6 +65,7 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking {
 	private boolean updates = false;
 	private SharedPreferences sharedPreferences;
 	private SharedPreferences.Editor editor;
+	private TextToSpeech tts;
 
 	@Override
 	protected void onStart() {
@@ -194,9 +197,21 @@ public class OnTheGoActivity extends Activity implements HelloBus, Walking {
 		timer.start();
 
 		editor = sharedPreferences.edit();
+
+		tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+			@Override
+			public void onInit(int status) {
+				if(status != TextToSpeech.ERROR) {
+					tts.setLanguage(Locale.getDefault());
+				}
+			}
+		});
 	}
 
 	public void getOff(View view) {
+		Toast.makeText(OnTheGoActivity.this, "Scendi", Toast.LENGTH_SHORT).show();
+		tts.speak("Scendi", TextToSpeech.QUEUE_FLUSH, null);
+
 		if (nLeg == (route.getLegs().size() - 1)) {
 			Intent intent = new Intent(this, DestinationActivityB.class);
 			startActivity(intent);

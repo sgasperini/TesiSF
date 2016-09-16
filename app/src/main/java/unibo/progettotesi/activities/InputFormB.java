@@ -94,7 +94,8 @@ public class InputFormB extends AppCompatActivity {
 	//set OnKeyListener sull'EditText
 
 	private void setAddress(int cont){
-		//leggerlo ad alta voce, poi controllare che ritorni una posizione reale, chiedere quanto vuol camminare
+		//leggerlo ad alta voce, poi controllare che ritorni una posizione reale
+
 		if(addressToCoordinates()) {
 
 			location = new Location(latitude, longitude, editText.getText().toString());

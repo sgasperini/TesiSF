@@ -34,7 +34,7 @@
                 android:layout_alignEnd="@+id/imageButton"
                 style="?android:attr/borderlessButtonStyle"
                 android:src="@drawable/ic_timeline_black_48dp"
-                android:onClick="newProfile"
+                android:onClick="profilesManaging"
                 android:scaleType="centerInside"
                 android:adjustViewBounds="false"
                 android:background="#80cbc4"
