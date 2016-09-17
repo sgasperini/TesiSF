@@ -14,6 +14,7 @@ import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -30,7 +31,7 @@ import unibo.progettotesi.utilities.RealTimeTracker;
 import unibo.progettotesi.utilities.Time;
 import unibo.progettotesi.utilities.Walking;
 
-public class BusWaitingActivity extends Activity implements HelloBus, Walking {
+public class BusWaitingActivity extends AppCompatActivity implements HelloBus, Walking {
 	private Route route;
 	private int nLeg;
 	private CountDownTimer timer;

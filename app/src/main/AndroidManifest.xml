@@ -62,7 +62,6 @@
         </activity>
         <activity
             android:name=".activities.ProfileManagingActivityB"
-            android:label="Gestione Profili"
             android:screenOrientation="portrait">
         </activity>
         <activity

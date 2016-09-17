@@ -36,7 +36,7 @@
             android:onClick="gpsClick"
             android:scaleType="center"
             android:background="#80cbc4"
-            />
+            android:contentDescription="GPS"/>
 
         <ImageButton
             android:layout_width="match_parent"
@@ -48,7 +48,8 @@
             style="?android:attr/borderlessButtonStyle"
             android:onClick="favoritesClick"
             android:background="#26a69a"
-            android:scaleType="center"/>
+            android:scaleType="center"
+            android:contentDescription="Preferiti"/>
 
         <ImageButton
             android:layout_width="match_parent"
@@ -59,7 +60,8 @@
             android:src="@drawable/ic_location_city_black_48dp"
             style="?android:attr/borderlessButtonStyle"
             android:onClick="addressClick"
-            android:background="#00897b"/>
+            android:background="#00897b"
+            android:contentDescription="Indirizzo"/>
     </LinearLayout>
 
 </RelativeLayout>

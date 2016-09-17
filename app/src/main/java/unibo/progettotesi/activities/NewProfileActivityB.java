@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
@@ -16,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.accessibility.AccessibilityManager;
 import android.widget.Toast;
 
 import java.util.List;
@@ -27,6 +29,7 @@ import unibo.progettotesi.model.Place;
 import unibo.progettotesi.model.Profile;
 import unibo.progettotesi.utilities.Constants;
 import unibo.progettotesi.utilities.LocationToolbox;
+import unibo.progettotesi.utilities.VoiceSupport;
 
 public class NewProfileActivityB extends AppCompatActivity {
 	private boolean start;
@@ -38,14 +41,28 @@ public class NewProfileActivityB extends AppCompatActivity {
 	private Place place;
 	private LocationToolbox locationToolbox;
 	private TextToSpeech tts;
+	private int editProfileN;
+	private boolean departure;
+	private Profile editingProfile;
+	private SharedPreferences sharedPreferences;
+	private SharedPreferences.Editor editor;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.new_profile_activity_b);
 
+		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+		editor = sharedPreferences.edit();
+
 		start = getIntent().getBooleanExtra("Start", false);
 		gpsStart = getIntent().getBooleanExtra("GPS", false);
+		editProfileN = getIntent().getIntExtra("editProfileN", -1);
+		if(editProfileN != -1) {
+			departure = getIntent().getBooleanExtra("departure", false);
+			editingProfile = Profile.getProfileFromString(sharedPreferences.getString("ProfileN_" + editProfileN, ""));
+		}
+
 		//se è stato usato per la partenza il gps levalo
 		if(gpsStart)
 			findViewById(R.id.gps).setVisibility(View.GONE);
@@ -54,6 +71,13 @@ public class NewProfileActivityB extends AppCompatActivity {
 			this.setTitle("Partenza");
 		else
 			this.setTitle("Destinazione");
+		if(editProfileN != -1){
+			if(departure)
+				this.setTitle("Nuova Partenza");
+			else
+				this.setTitle("Nuova Destinazione");
+		}
+
 
 		tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
 			@Override
@@ -63,12 +87,28 @@ public class NewProfileActivityB extends AppCompatActivity {
 				}
 			}
 		});
+
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		/*if (!VoiceSupport.isTalkBackEnabled(this))
+			if((start && editProfileN == -1) || (editProfileN != -1 && departure)) {
+				Log.wtf("VOICE", "Partenza...");
+				tts.speak("Partenza, seleziona metodo immissione", TextToSpeech.QUEUE_FLUSH, null);
+			}else{
+				Log.wtf("VOICE", "Destinazione...");
+				tts.speak("Destinazione, seleziona metodo immissione", TextToSpeech.QUEUE_FLUSH, null);
+			}*/
 	}
 
 	public void gpsClick(View v){
 		// verificare sia attivo (accenderlo), prendere la posizione e mostrarla come indirizzo chiedendo se si vuol salvare come preferito, comunque sia chiedere la distanza a piedi, poi chiamare la nuova activity
-		Toast.makeText(NewProfileActivityB.this, "GPS", Toast.LENGTH_SHORT).show();
-		tts.speak("GPS", TextToSpeech.QUEUE_FLUSH, null);
+		if(!VoiceSupport.isTalkBackEnabled(this))
+			Toast.makeText(NewProfileActivityB.this, "GPS, attendere", Toast.LENGTH_SHORT).show();
+		tts.speak("GPS, attendere", TextToSpeech.QUEUE_FLUSH, null);
 		
 		findViewById(R.id.progressBar_newProfile).setVisibility(View.VISIBLE);
 		findViewById(R.id.gps).setVisibility(View.GONE);
@@ -114,8 +154,11 @@ public class NewProfileActivityB extends AppCompatActivity {
 	public void favoritesClick(View v){
 		Intent intent = new Intent(this, FavoritesProfileB.class);
 		intent.putExtra("Start", start);
+		intent.putExtra("departure", departure);
+		intent.putExtra("editProfileN", editProfileN);
 
-		Toast.makeText(NewProfileActivityB.this, "Preferiti", Toast.LENGTH_SHORT).show();
+		if(!VoiceSupport.isTalkBackEnabled(this))
+			Toast.makeText(NewProfileActivityB.this, "Preferiti", Toast.LENGTH_SHORT).show();
 		tts.speak("Preferiti", TextToSpeech.QUEUE_FLUSH, null);
 		
 		startActivity(intent);
@@ -123,29 +166,56 @@ public class NewProfileActivityB extends AppCompatActivity {
 	}
 
 	public void addressClick(View v){
-		Intent intent = new Intent(this, InputFormB.class);
-		intent.putExtra("Start", start);
-		intent.putExtra("Address", true);
+		Intent intent;
+		if(editProfileN == -1){
+			intent = new Intent(this, InputFormB.class);
+			intent.putExtra("Start", start);
+			intent.putExtra("Address", true);
+		}else{
+			intent = new Intent(this, EditNameProfile.class);
+			intent.putExtra("Address", true);
+			intent.putExtra("editProfileN", editProfileN);
+			intent.putExtra("departure", departure);
+		}
 
-		tts.speak("Indirizzo", TextToSpeech.QUEUE_FLUSH, null);
-		Toast.makeText(NewProfileActivityB.this, "Indirizzo", Toast.LENGTH_SHORT).show();
+		tts.speak("Immettere Indirizzo", TextToSpeech.QUEUE_FLUSH, null);
+		if(!VoiceSupport.isTalkBackEnabled(this))
+			Toast.makeText(NewProfileActivityB.this, "Indirizzo", Toast.LENGTH_SHORT).show();
 		
 		startActivity(intent);
 		finish();
 	}
 
-	private void confirmAddress(){
+	private void confirmAddress(){	//GPS
 		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+		if(!VoiceSupport.isTalkBackEnabled(this)){
+			tts.speak("Trovato: " + address + " corretto?", TextToSpeech.QUEUE_FLUSH, null);
+		}
 		alertDialogBuilder
 				.setMessage("Trovato:\n" + address + "\ncorretto?")
 				.setCancelable(false)
 				.setPositiveButton("Sì", new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						saveLocation();
-						askFavorite();
-						dialog.cancel();
-						locationToolbox.stopUsingGPS();
+						if(editProfileN == -1) {
+							saveLocation();
+							askFavorite();
+							dialog.cancel();
+							locationToolbox.stopUsingGPS();
+						}else{
+							if(departure)
+								editingProfile.setStart(place);
+							else
+								editingProfile.setEnd(place);
+							editor.putString("ProfileN_" + editProfileN, editingProfile.savingString());
+							editor.commit();
+							if(!VoiceSupport.isTalkBackEnabled(getApplicationContext()))
+								Toast.makeText(NewProfileActivityB.this, "Profilo modificato", Toast.LENGTH_SHORT).show();
+							tts.speak("Profilo modificato", TextToSpeech.QUEUE_FLUSH, null);
+							dialog.cancel();
+							locationToolbox.stopUsingGPS();
+							finish();
+						}
 					}
 				})
 
@@ -154,6 +224,8 @@ public class NewProfileActivityB extends AppCompatActivity {
 					public void onClick(DialogInterface dialog, int which) {
 						Intent intent = new Intent(getApplicationContext(), NewProfileActivityB.class);
 						intent.putExtra("Start", start);
+						intent.putExtra("editProfileN", editProfileN);
+						intent.putExtra("departure", departure);
 						startActivity(intent);
 						dialog.cancel();
 						locationToolbox.stopUsingGPS();
@@ -167,6 +239,9 @@ public class NewProfileActivityB extends AppCompatActivity {
 
 	private void askFavorite(){
 		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+		if(!VoiceSupport.isTalkBackEnabled(this)){
+			tts.speak("Vuoi salvare il luogo tra i preferiti?", TextToSpeech.QUEUE_FLUSH, null);
+		}
 		alertDialogBuilder
 				.setMessage("Vuoi salvare il luogo tra i preferiti?")
 				.setCancelable(false)
@@ -195,6 +270,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 			Intent intent = new Intent(getApplicationContext(), NewProfileActivityB.class);
 			intent.putExtra("Start", !start);
 			intent.putExtra("GPS", true);
+			tts.speak("Destinazione, selezionare metodo immissione", TextToSpeech.QUEUE_FLUSH, null);
 			startActivity(intent);
 			finish();
 		}else{
@@ -208,6 +284,12 @@ public class NewProfileActivityB extends AppCompatActivity {
 		intent.putExtra("Name", true);
 		intent.putExtra("GPS", true);
 		intent.putExtra("Favorite", forFavorite);
+		if(!VoiceSupport.isTalkBackEnabled(getApplicationContext())) {
+			if (forFavorite)
+				tts.speak("Immettere nome preferito", TextToSpeech.QUEUE_FLUSH, null);
+			else
+				tts.speak("Immettere nome profilo", TextToSpeech.QUEUE_FLUSH, null);
+		}
 		startActivity(intent);
 		finish();
 	}
@@ -216,10 +298,17 @@ public class NewProfileActivityB extends AppCompatActivity {
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 		SharedPreferences.Editor editor = preferences.edit();
 
-		if(start)
-			editor.putString("StartTempPlace", place.savingString());
-		else
-			editor.putString("EndTempPlace", place.savingString());
+		if(editProfileN == -1) {
+			if (start)
+				editor.putString("StartTempPlace", place.savingString());
+			else
+				editor.putString("EndTempPlace", place.savingString());
+		}else{
+			if(departure)
+				editingProfile.setStart(place);
+			else
+				editingProfile.setEnd(place);
+		}
 
 		editor.commit();
 	}

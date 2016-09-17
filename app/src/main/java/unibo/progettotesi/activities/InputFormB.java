@@ -5,20 +5,25 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.util.List;
+import java.util.Locale;
 
 import unibo.progettotesi.R;
 import unibo.progettotesi.model.Location;
 import unibo.progettotesi.model.Place;
 import unibo.progettotesi.utilities.Constants;
+import unibo.progettotesi.utilities.VoiceSupport;
 
 public class InputFormB extends AppCompatActivity {
 	private boolean start;
@@ -30,6 +35,7 @@ public class InputFormB extends AppCompatActivity {
 	private double latitude;
 	private double longitude;
 	private Location location;
+	private TextToSpeech tts;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -43,19 +49,31 @@ public class InputFormB extends AppCompatActivity {
 		favorite = getIntent().getBooleanExtra("Favorite", false);
 
 		editText = (EditText) findViewById(R.id.inputEditText);
+		editText.setTextSize(36);
+
+		tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+			@Override
+			public void onInit(int status) {
+				if(status != TextToSpeech.ERROR) {
+					tts.setLanguage(Locale.getDefault());
+				}
+			}
+		});
+
+		boolean talkBack = VoiceSupport.isTalkBackEnabled(this);
 		if(address){
 			latitude = 0;
 			longitude = 0;
 			editText.setHint(Constants.ADDRESS_INPUT_HINT);
 			this.setTitle("Indirizzo");
 		}else if(name){
-			if(favorite)
+			if(favorite) {
 				editText.setHint(Constants.NAME_FAVORITE_INPUT_HINT);
-			else
+			}else{
 				editText.setHint(Constants.NAME_PROFILE_INPUT_HINT);
+			}
 			this.setTitle("Nome");
 		}
-		editText.setTextSize(36);
 	}
 
 	public void confirmInput(View v){
@@ -69,6 +87,8 @@ public class InputFormB extends AppCompatActivity {
 	private void setName() {
 		if(!favorite) {
 			NewProfileActivityB.saveProfile(this, editText.getText().toString());
+			tts.speak("Profilo salvato", TextToSpeech.QUEUE_FLUSH, null);
+			Toast.makeText(InputFormB.this, "Profilo Salvato", Toast.LENGTH_SHORT).show();
 			finish();
 		}else {
 			SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -85,6 +105,9 @@ public class InputFormB extends AppCompatActivity {
 			editor.putString("FavoriteN_" + numFavorites, place.savingStringFavorite());
 			editor.putInt("NumFavorites", numFavorites);
 
+			tts.speak(editText.getText().toString() + " salvato", TextToSpeech.QUEUE_FLUSH, null);
+			Toast.makeText(InputFormB.this, editText.getText().toString() + " salvato", Toast.LENGTH_SHORT).show();
+
 			editor.commit();
 
 			continueProfileCreation(null, false);
@@ -98,15 +121,22 @@ public class InputFormB extends AppCompatActivity {
 
 		if(addressToCoordinates()) {
 
+			tts.speak("Inserito " + editText.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
+
 			location = new Location(latitude, longitude, editText.getText().toString());
 
 			saveLocation();
 
 			askFavorite();
 
-		}else
-			if(cont < 4)
-				setAddress(cont+1);
+		}else {
+			if (cont < 4)
+				setAddress(cont + 1);
+			else {
+				Toast.makeText(InputFormB.this, "Indirizzo non trovato", Toast.LENGTH_SHORT).show();
+				tts.speak("Indirizzo non trovato", TextToSpeech.QUEUE_FLUSH, null);
+			}
+		}
 	}
 
 	private boolean addressToCoordinates() {
@@ -161,6 +191,9 @@ public class InputFormB extends AppCompatActivity {
 
 	private void askFavorite(){
 		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+		if(!VoiceSupport.isTalkBackEnabled(this)){
+			tts.speak("Vuoi salvare il luogo tra i preferiti?", TextToSpeech.QUEUE_FLUSH, null);
+		}
 		alertDialogBuilder
 				.setMessage("Vuoi salvare il luogo tra i preferiti?")
 				.setCancelable(false)
@@ -188,6 +221,12 @@ public class InputFormB extends AppCompatActivity {
 		intent.putExtra("Start", start);
 		intent.putExtra("Name", true);
 		intent.putExtra("Favorite", forFavorite);
+		if(!VoiceSupport.isTalkBackEnabled(getApplicationContext())) {
+			if (forFavorite)
+				tts.speak("Immettere nome preferito", TextToSpeech.QUEUE_FLUSH, null);
+			else
+				tts.speak("Immettere nome profilo", TextToSpeech.QUEUE_FLUSH, null);
+		}
 		startActivity(intent);
 		finish();
 	}

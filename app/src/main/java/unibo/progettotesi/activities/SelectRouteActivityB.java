@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ListView;
 
@@ -17,7 +18,7 @@ import unibo.progettotesi.model.Route;
 import unibo.progettotesi.utilities.RouteFinder;
 import unibo.progettotesi.utilities.Time;
 
-public class SelectRouteActivityB extends Activity {
+public class SelectRouteActivityB extends AppCompatActivity {
 	private RouteFinder routeFinder;
 	private List<Route> routeList;
 	private Profile profile;

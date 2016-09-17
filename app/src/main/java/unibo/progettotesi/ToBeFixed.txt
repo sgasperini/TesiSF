@@ -5,7 +5,10 @@ Da sistemare:
 - beta3 di Retrofit.........
 - rilevazione partenza sbagliata o pressione salgo quando già salito da un tot
 - progress bar delle conversioni coodrinate e indirizzo
-- sei un bus in ritardo, minuti a scendere da orario può negativo
+- sei un bus in ritardo, minuti a scendere da orario può negativo (forse risolto)
+
+- disattivazione vocale
+- dialogo che dica ok per fermare la vibrazione pre discesa
 
 da fare prossima volta
 
@@ -13,3 +16,14 @@ da fare prossima volta
 
 problemi esterni
 - ogni tanto si va in socket timeout non si sa perché forse problemi di internet, pare vero
+- peggio ancora non funziona nessun servizio
+
+
+problemi strani:
+
+
+impostazioni:
+- disabilita voce
+- percorso preferito
+- ordina preferiti ?
+- cancella tutto ?

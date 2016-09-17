@@ -14,6 +14,7 @@ import java.util.Locale;
 
 import unibo.progettotesi.R;
 import unibo.progettotesi.model.Route;
+import unibo.progettotesi.utilities.VoiceSupport;
 
 public class MainActivity extends AppCompatActivity {
 	private String routeS;
@@ -56,7 +57,8 @@ public class MainActivity extends AppCompatActivity {
 		Intent intent = new Intent(this, ProfileManagingActivityB.class);
 		//intent.putExtra("Start", true);
 
-		Toast.makeText(MainActivity.this, "Gestione Profili", Toast.LENGTH_SHORT).show();
+		if(!VoiceSupport.isTalkBackEnabled(this))
+			Toast.makeText(MainActivity.this, "Gestione Profili", Toast.LENGTH_SHORT).show();
 		tts.speak("Gestione profili", TextToSpeech.QUEUE_FLUSH, null);
 
 		startActivity(intent);
@@ -65,7 +67,8 @@ public class MainActivity extends AppCompatActivity {
 	public void newTrip(View v){
 		Intent intent = new Intent(this, NewTripActivityB.class);
 
-		Toast.makeText(MainActivity.this, "Nuovo Viaggio", Toast.LENGTH_SHORT).show();
+		if(!VoiceSupport.isTalkBackEnabled(this))
+			Toast.makeText(MainActivity.this, "Nuovo Viaggio", Toast.LENGTH_SHORT).show();
 
 		tts.speak("Nuovo viaggio", TextToSpeech.QUEUE_FLUSH, null);
 

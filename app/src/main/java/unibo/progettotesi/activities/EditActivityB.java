@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.List;
 import unibo.progettotesi.R;
 import unibo.progettotesi.model.Profile;
 
-public class EditActivityB extends Activity {
+public class EditActivityB extends AppCompatActivity {
 	private int profileN;
 	private Profile currentProfile;
 	private SharedPreferences sharedPreferences;
@@ -39,11 +40,21 @@ public class EditActivityB extends Activity {
 	}
 
 	public void departureClick(View view){
+		Intent intent = new Intent(this, NewProfileActivityB.class);
+		intent.putExtra("editProfileN", profileN);
+		intent.putExtra("departure", true);
+		startActivity(intent);
 
+		finish();
 	}
 
 	public void arrivalClick(View view){
+		Intent intent = new Intent(this, NewProfileActivityB.class);
+		intent.putExtra("editProfileN", profileN);
+		intent.putExtra("departure", false);
+		startActivity(intent);
 
+		finish();
 	}
 
 

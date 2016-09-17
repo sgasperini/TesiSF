@@ -1,24 +1,27 @@
 package unibo.progettotesi.activities;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.speech.tts.TextToSpeech;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import unibo.progettotesi.R;
 import unibo.progettotesi.adapters.ProfilesAdapter;
 import unibo.progettotesi.model.Profile;
 
-public class EditDeleteActivityB extends Activity {
+public class EditDeleteActivityB extends AppCompatActivity {
 	private ProfilesAdapter profilesAdapter;
 	private boolean edit;
 	private List<Profile> profileList;
+	private TextToSpeech tts;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -33,9 +36,18 @@ public class EditDeleteActivityB extends Activity {
 
 		profileList = getProfiles();
 
-		profilesAdapter = new ProfilesAdapter(this, R.layout.profile_b_list, profileList);
+		profilesAdapter = new ProfilesAdapter(this, R.layout.profile_b_list, profileList, edit);
 
 		((ListView) findViewById(R.id.listView2)).setAdapter(profilesAdapter);
+
+		tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+			@Override
+			public void onInit(int status) {
+				if(status != TextToSpeech.ERROR) {
+					tts.setLanguage(Locale.getDefault());
+				}
+			}
+		});
 	}
 
 	private List<Profile> getProfiles() {
@@ -73,6 +85,8 @@ public class EditDeleteActivityB extends Activity {
 			}
 			editor.remove("ProfileN_" + numProfiles);
 			editor.putInt("NumProfiles", numProfiles - 1);
+			editDeleteActivityB.tts.speak("Profilo eliminato", TextToSpeech.QUEUE_FLUSH, null);
+			Toast.makeText(editDeleteActivityB, "Profilo eliminato", Toast.LENGTH_SHORT).show();
 			editor.commit();
 			editDeleteActivityB.finish();
 		}

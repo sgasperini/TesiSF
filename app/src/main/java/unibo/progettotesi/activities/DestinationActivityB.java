@@ -11,6 +11,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -23,7 +24,7 @@ import unibo.progettotesi.utilities.Constants;
 import unibo.progettotesi.utilities.RealTimeTracker;
 import unibo.progettotesi.utilities.Walking;
 
-public class DestinationActivityB extends Activity implements Walking{
+public class DestinationActivityB extends AppCompatActivity implements Walking{
 	private LocationListener locationListener = new WalkingLocationListener();
 	private LocationManager lm;
 	private DestinationActivityB destinationActivityB;

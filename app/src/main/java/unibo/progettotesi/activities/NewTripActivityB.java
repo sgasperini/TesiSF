@@ -1,21 +1,17 @@
 package unibo.progettotesi.activities;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import unibo.progettotesi.R;
-import unibo.progettotesi.adapters.FavoritesAdapter;
 import unibo.progettotesi.adapters.ProfilesAdapter;
-import unibo.progettotesi.model.Place;
 import unibo.progettotesi.model.Profile;
 
 public class NewTripActivityB extends AppCompatActivity {
