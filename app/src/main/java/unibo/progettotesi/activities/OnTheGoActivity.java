@@ -2,6 +2,7 @@ package unibo.progettotesi.activities;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -14,6 +15,7 @@ import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -33,6 +35,7 @@ import unibo.progettotesi.utilities.HelloBus;
 import unibo.progettotesi.utilities.LocationToolbox;
 import unibo.progettotesi.utilities.RealTimeTracker;
 import unibo.progettotesi.utilities.Time;
+import unibo.progettotesi.utilities.VoiceSupport;
 import unibo.progettotesi.utilities.Walking;
 
 public class OnTheGoActivity extends AppCompatActivity implements HelloBus, Walking {
@@ -66,6 +69,9 @@ public class OnTheGoActivity extends AppCompatActivity implements HelloBus, Walk
 	private SharedPreferences sharedPreferences;
 	private SharedPreferences.Editor editor;
 	private TextToSpeech tts;
+	private boolean vibration = false;
+	private boolean shownDialog = false;
+	private boolean voiceSupport;
 
 	@Override
 	protected void onStart() {
@@ -128,6 +134,8 @@ public class OnTheGoActivity extends AppCompatActivity implements HelloBus, Walk
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_on_the_go);
+
+		setTitle("In Viaggio");
 
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		route = Route.getRouteFromString(sharedPreferences.getString("CurrentRoute", ""));
@@ -198,36 +206,69 @@ public class OnTheGoActivity extends AppCompatActivity implements HelloBus, Walk
 
 		editor = sharedPreferences.edit();
 
-		tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-			@Override
-			public void onInit(int status) {
-				if(status != TextToSpeech.ERROR) {
-					tts.setLanguage(Locale.getDefault());
+		voiceSupport = sharedPreferences.getBoolean("VoiceSupport", true);
+
+		if(voiceSupport)
+			tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+				@Override
+				public void onInit(int status) {
+					if(status != TextToSpeech.ERROR) {
+						tts.setLanguage(Locale.getDefault());
+					}
 				}
-			}
-		});
+			});
 	}
 
 	public void getOff(View view) {
-		Toast.makeText(OnTheGoActivity.this, "Scendi", Toast.LENGTH_SHORT).show();
-		tts.speak("Scendi", TextToSpeech.QUEUE_FLUSH, null);
+		final OnTheGoActivity onTheGoActivity = this;
+		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+		if(voiceSupport)
+			if(!VoiceSupport.isTalkBackEnabled(this)){
+				tts.speak("Confermi di voler scendere dall'autobus?", TextToSpeech.QUEUE_FLUSH, null);
+			}
+		alertDialogBuilder
+				.setTitle("Conferma")
+				.setIcon(R.mipmap.ic_launcher)
+				.setMessage("Confermi di voler scendere dall'autobus?")
+				.setCancelable(false)
+				.setPositiveButton("Sì", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						if(!VoiceSupport.isTalkBackEnabled(onTheGoActivity))
+							Toast.makeText(OnTheGoActivity.this, "Discesa", Toast.LENGTH_SHORT).show();
+						if(voiceSupport)
+							tts.speak("Discesa", TextToSpeech.QUEUE_FLUSH, null);
 
-		if (nLeg == (route.getLegs().size() - 1)) {
-			Intent intent = new Intent(this, DestinationActivityB.class);
-			startActivity(intent);
-		} else {
-			Intent intent = new Intent(this, BusWaitingActivity.class);
-			intent.putExtra("NLeg", nLeg + 1);
-			startActivity(intent);
-		}
+						if (nLeg == (route.getLegs().size() - 1)) {
+							Intent intent = new Intent(onTheGoActivity, DestinationActivityB.class);
+							startActivity(intent);
+						} else {
+							Intent intent = new Intent(onTheGoActivity, BusWaitingActivity.class);
+							intent.putExtra("NLeg", nLeg + 1);
+							startActivity(intent);
+						}
 	/*	if(locationToolbox != null)
 			locationToolbox.stopUsingGPS();*/
 
-		editor.putString("LastStop", "");
-		editor.commit();
+						editor.putString("LastStop", "");
+						editor.commit();
 
-		finish();
-		timer.cancel();
+						dialog.cancel();
+
+						finish();
+						timer.cancel();
+					}
+				})
+
+				.setNegativeButton("No", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+					}
+				});
+
+		AlertDialog alertDialog = alertDialogBuilder.create();
+		alertDialog.show();
 	}
 
 	private void getETA() {
@@ -285,11 +326,41 @@ public class OnTheGoActivity extends AppCompatActivity implements HelloBus, Walk
 		if (stopsToGo != null && stopsToGo.size() > 1) {
 			passingCondition(location);
 			updateViews(location);
-		} else if (stopsToGo != null && stopsToGo.size() == 1) {
-			updateViews(location);
-			((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(200);
-			Toast.makeText(OnTheGoActivity.this, "SCENDI ALLA PROSSIMA!", Toast.LENGTH_SHORT).show();
-			Log.wtf("RINGRAZIA IL LOG", "SCENDI ALLA PROSSIMA!");
+		} else{
+			if (stopsToGo != null && stopsToGo.size() == 1) {
+				if(!shownDialog) {
+					shownDialog = true;
+					vibration = true;
+
+					AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+					if(voiceSupport)
+						if(!VoiceSupport.isTalkBackEnabled(this)){
+							tts.speak("Scendere alla prossima fermata, conferma per fermare avvisi", TextToSpeech.QUEUE_FLUSH, null);
+						}
+					alertDialogBuilder
+							.setTitle("Discesa")
+							.setIcon(R.mipmap.ic_launcher)
+							.setMessage("Scendere alla prossima fermata, conferma per fermare avvisi")
+							.setCancelable(false)
+							.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									vibration = false;
+									dialog.cancel();
+								}
+							});
+
+					AlertDialog alertDialog = alertDialogBuilder.create();
+					alertDialog.show();
+				}
+
+				updateViews(location);
+				if(vibration) {
+					((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(200);
+					Toast.makeText(OnTheGoActivity.this, "SCENDI ALLA PROSSIMA!", Toast.LENGTH_SHORT).show();
+					Log.wtf("RINGRAZIA IL LOG", "SCENDI ALLA PROSSIMA!");
+				}
+			}
 		}
 	}
 
@@ -346,6 +417,8 @@ public class OnTheGoActivity extends AppCompatActivity implements HelloBus, Walk
 	}
 
 	private void stopPassed() {
+		if(voiceSupport)
+			tts.speak("Fermata " + stopsToGo.get(0).getName() + " superata, Prossima fermata: " + stopsToGo.get(1).getName() + ". Fermate a scendere: " + (stopsToGo.size() - 2), TextToSpeech.QUEUE_FLUSH, null);
 		Log.wtf("FERMATE", previousStop.getName() + " -> " + stopsToGo.get(0).getName());
 		previousStop = stopsToGo.get(0);
 		editor.putString("LastStop", previousStop.savingStringEmergency());
@@ -435,6 +508,7 @@ public class OnTheGoActivity extends AppCompatActivity implements HelloBus, Walk
 
 	@Override
 	protected void onDestroy() {
+
 		Log.wtf("OnTheGoActivity", "ON DESTROY");
 		timer.cancel();
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -449,23 +523,56 @@ public class OnTheGoActivity extends AppCompatActivity implements HelloBus, Walk
 		editor.putString("LastStop", "");
 		editor.putString("CurrentRoute", "");
 		editor.commit();
+
+		if(tts !=null){
+			while(tts.isSpeaking()){}
+			tts.stop();
+			tts.shutdown();
+		}
+
 		super.onDestroy();
 	}
 
 	 public void onBackPressed(){
-		 timer.cancel();
-		 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			 //
-		 }else if(lm != null){
-			 Log.wtf("LOCATION UPDATES", "REMOVING OTG BACK");
-			 lm.removeUpdates(locationListener);
-			 lm = null;
-		 }
-		 if(locationListener != null)
-			 locationListener = null;
-		 editor.putString("LastStop", "");
-		 editor.putString("CurrentRoute", "");
-		 editor.commit();
-		 super.onBackPressed();
+		 final OnTheGoActivity onTheGoActivity = this;
+		 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+		 if(voiceSupport)
+			 if(!VoiceSupport.isTalkBackEnabled(this)){
+			 	tts.speak("Confermi di tornare indietro e perdere il percorso corrente?", TextToSpeech.QUEUE_FLUSH, null);
+			 }
+		 alertDialogBuilder
+				 .setTitle("Conferma")
+				 .setIcon(R.mipmap.ic_launcher)
+				 .setMessage("Confermi di tornare indietro e perdere il percorso corrente?")
+				 .setCancelable(false)
+				 .setPositiveButton("Sì", new DialogInterface.OnClickListener() {
+					 @Override
+					 public void onClick(DialogInterface dialog, int which) {
+						 timer.cancel();
+						 if (ActivityCompat.checkSelfPermission(onTheGoActivity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(onTheGoActivity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+							 //
+						 }else if(lm != null){
+							 Log.wtf("LOCATION UPDATES", "REMOVING OTG BACK");
+							 lm.removeUpdates(locationListener);
+							 lm = null;
+						 }
+						 if(locationListener != null)
+							 locationListener = null;
+						 editor.putString("LastStop", "");
+						 editor.putString("CurrentRoute", "");
+						 editor.commit();
+						 OnTheGoActivity.super.onBackPressed();
+					 }
+				 })
+
+				 .setNegativeButton("No", new DialogInterface.OnClickListener() {
+					 @Override
+					 public void onClick(DialogInterface dialog, int which) {
+						 dialog.cancel();
+					 }
+				 });
+
+		 AlertDialog alertDialog = alertDialogBuilder.create();
+		 alertDialog.show();
 	 }
 }

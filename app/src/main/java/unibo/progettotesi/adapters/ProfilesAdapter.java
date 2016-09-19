@@ -1,6 +1,7 @@
 package unibo.progettotesi.adapters;
 
 import android.content.Context;
+import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +25,7 @@ import unibo.progettotesi.utilities.VoiceSupport;
 
 
 public class ProfilesAdapter extends ArrayAdapter<Profile> {
+	private final boolean voiceSupport;
 	private int resource;
 	private NewTripActivityB newTripActivityB;
 	private EditDeleteActivityB editDeleteActivityB;
@@ -34,14 +36,18 @@ public class ProfilesAdapter extends ArrayAdapter<Profile> {
 		super((Context) newTripActivityB, _resource, items);
 		resource = _resource;
 		this.newTripActivityB = newTripActivityB;
-		tts = new TextToSpeech(newTripActivityB.getApplicationContext(), new TextToSpeech.OnInitListener() {
-			@Override
-			public void onInit(int status) {
-				if(status != TextToSpeech.ERROR) {
-					tts.setLanguage(Locale.getDefault());
+
+		voiceSupport = PreferenceManager.getDefaultSharedPreferences(newTripActivityB).getBoolean("VoiceSupport", true);
+
+		if(voiceSupport)
+			tts = new TextToSpeech(newTripActivityB, new TextToSpeech.OnInitListener() {
+				@Override
+				public void onInit(int status) {
+					if(status != TextToSpeech.ERROR) {
+						tts.setLanguage(Locale.getDefault());
+					}
 				}
-			}
-		});
+			});
 	}
 
 	public ProfilesAdapter(EditDeleteActivityB editDeleteActivityB, int _resource, List<Profile> items, boolean edit) {
@@ -49,14 +55,18 @@ public class ProfilesAdapter extends ArrayAdapter<Profile> {
 		resource = _resource;
 		this.editDeleteActivityB = editDeleteActivityB;
 		this.edit = edit;
-		tts = new TextToSpeech(editDeleteActivityB.getApplicationContext(), new TextToSpeech.OnInitListener() {
-			@Override
-			public void onInit(int status) {
-				if(status != TextToSpeech.ERROR) {
-					tts.setLanguage(Locale.getDefault());
+
+		voiceSupport = PreferenceManager.getDefaultSharedPreferences(editDeleteActivityB).getBoolean("VoiceSupport", true);
+
+		if(voiceSupport)
+			tts = new TextToSpeech(editDeleteActivityB, new TextToSpeech.OnInitListener() {
+				@Override
+				public void onInit(int status) {
+					if(status != TextToSpeech.ERROR) {
+						tts.setLanguage(Locale.getDefault());
+					}
 				}
-			}
-		});
+			});
 	}
 
 	@Override
@@ -84,14 +94,19 @@ public class ProfilesAdapter extends ArrayAdapter<Profile> {
 		relativeLayout.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if(!VoiceSupport.isTalkBackEnabled(getContext()))
-					tts.speak("Selezionato " + profile.getName(), TextToSpeech.QUEUE_FLUSH, null);
+				if(voiceSupport)
+					if(!VoiceSupport.isTalkBackEnabled(getContext()))
+						tts.speak("Selezionato " + profile.getName(), TextToSpeech.QUEUE_FLUSH, null);
 				if(newTripActivityB != null)
 					NewTripActivityB.selectProfile(newTripActivityB, profile);
 				else {
 					EditDeleteActivityB.selectProfile(editDeleteActivityB, profile, pos);
-					if(edit)
-						tts.speak("selezionare campo da modificare", TextToSpeech.QUEUE_FLUSH, null);
+				}
+
+				if(tts !=null){
+					while(tts.isSpeaking()){}
+					tts.stop();
+					tts.shutdown();
 				}
 			}
 		});

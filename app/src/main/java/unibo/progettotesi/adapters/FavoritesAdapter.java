@@ -1,6 +1,7 @@
 package unibo.progettotesi.adapters;
 
 import android.content.Context;
+import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +21,7 @@ import unibo.progettotesi.utilities.VoiceSupport;
 
 
 public class FavoritesAdapter extends ArrayAdapter<Place> {
+	private final boolean voiceSupport;
 	private int resource;
 	private FavoritesProfileB favoritesProfileB;
 	private boolean start;
@@ -30,14 +32,17 @@ public class FavoritesAdapter extends ArrayAdapter<Place> {
 		resource = _resource;
 		this.favoritesProfileB = favoritesProfileB;
 
-		tts = new TextToSpeech(favoritesProfileB.getApplicationContext(), new TextToSpeech.OnInitListener() {
-			@Override
-			public void onInit(int status) {
-				if(status != TextToSpeech.ERROR) {
-					tts.setLanguage(Locale.getDefault());
+		voiceSupport = PreferenceManager.getDefaultSharedPreferences(favoritesProfileB).getBoolean("VoiceSupport", true);
+
+		if(voiceSupport)
+			tts = new TextToSpeech(favoritesProfileB, new TextToSpeech.OnInitListener() {
+				@Override
+				public void onInit(int status) {
+					if(status != TextToSpeech.ERROR) {
+						tts.setLanguage(Locale.getDefault());
+					}
 				}
-			}
-		});
+			});
 	}
 
 	public void setStart(boolean start){
@@ -69,9 +74,16 @@ public class FavoritesAdapter extends ArrayAdapter<Place> {
 		relativeLayout.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if(!VoiceSupport.isTalkBackEnabled(favoritesProfileB))
-					tts.speak("Selezionato " + place.getName(), TextToSpeech.QUEUE_FLUSH, null);
+				if(voiceSupport)
+					if(!VoiceSupport.isTalkBackEnabled(favoritesProfileB))
+						tts.speak("Selezionato " + place.getName(), TextToSpeech.QUEUE_FLUSH, null);
 				FavoritesProfileB.selectFavorite(favoritesProfileB, place, start);
+
+				if(tts !=null){
+					while(tts.isSpeaking()){}
+					tts.stop();
+					tts.shutdown();
+				}
 			}
 		});
 

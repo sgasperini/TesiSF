@@ -24,11 +24,14 @@ public class FavoritesProfileB extends AppCompatActivity {
 	private int editProfileN;
 	private boolean departure;
 	private TextToSpeech tts;
+	private boolean voiceSupport;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_list_b);
+
+		setTitle("Seleziona Preferito");
 
 		start = getIntent().getBooleanExtra("Start", false);
 		editProfileN = getIntent().getIntExtra("editProfileN", -1);
@@ -45,14 +48,17 @@ public class FavoritesProfileB extends AppCompatActivity {
 
 		((ListView) findViewById(R.id.listView)).setAdapter(favoritesAdapter);
 
-		tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-			@Override
-			public void onInit(int status) {
-				if(status != TextToSpeech.ERROR) {
-					tts.setLanguage(Locale.getDefault());
+		voiceSupport = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("VoiceSupport", true);
+
+		if(voiceSupport)
+			tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+				@Override
+				public void onInit(int status) {
+					if(status != TextToSpeech.ERROR) {
+						tts.setLanguage(Locale.getDefault());
+					}
 				}
-			}
-		});
+			});
 	}
 
 	private List<Place> getFavorites() {
@@ -84,16 +90,18 @@ public class FavoritesProfileB extends AppCompatActivity {
 				Intent intent = new Intent(favoritesProfileB, NewProfileActivityB.class);
 				intent.putExtra("Start", !start);
 				favoritesProfileB.startActivity(intent);
-				favoritesProfileB.tts.speak("Destinazione, selezionare metodo immissione", TextToSpeech.QUEUE_FLUSH, null);
+				if(favoritesProfileB.voiceSupport)
+					favoritesProfileB.tts.speak("Destinazione, selezionare metodo immissione", TextToSpeech.QUEUE_FLUSH, null);
 				favoritesProfileB.finish();
 			} else {
 				Intent intent = new Intent(favoritesProfileB, InputFormB.class);
 				intent.putExtra("Start", start);
 				intent.putExtra("Name", true);
 				intent.putExtra("Favorite", false);
-				if(!VoiceSupport.isTalkBackEnabled(favoritesProfileB)) {
-					favoritesProfileB.tts.speak("Immettere nome profilo", TextToSpeech.QUEUE_FLUSH, null);
-				}
+				if(favoritesProfileB.voiceSupport)
+					if(!VoiceSupport.isTalkBackEnabled(favoritesProfileB)) {
+						favoritesProfileB.tts.speak("Immettere nome profilo", TextToSpeech.QUEUE_FLUSH, null);
+					}
 				favoritesProfileB.startActivity(intent);
 				favoritesProfileB.finish();
 			}
@@ -105,8 +113,23 @@ public class FavoritesProfileB extends AppCompatActivity {
 				profile.setEnd(favoritePlace);
 			editor.putString("ProfileN_" + favoritesProfileB.editProfileN, profile.savingString());
 			editor.commit();
-			favoritesProfileB.tts.speak("Profilo modificato", TextToSpeech.QUEUE_FLUSH, null);
+			if(favoritesProfileB.voiceSupport)
+				favoritesProfileB.tts.speak("Profilo modificato", TextToSpeech.QUEUE_FLUSH, null);
+			NewProfileActivityB.finishHandlerEnd.sendEmptyMessage(0);
+			EditActivityB.finishHandler.sendEmptyMessage(0);
+			EditDeleteActivityB.finishHandler.sendEmptyMessage(0);
 			favoritesProfileB.finish();
 		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		if(tts !=null){
+			while(tts.isSpeaking()){}
+			tts.stop();
+			tts.shutdown();
+		}
+
+		super.onDestroy();
 	}
 }

@@ -8,7 +8,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
-import android.os.SystemClock;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
@@ -17,7 +18,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.accessibility.AccessibilityManager;
 import android.widget.Toast;
 
 import java.util.List;
@@ -46,6 +46,9 @@ public class NewProfileActivityB extends AppCompatActivity {
 	private Profile editingProfile;
 	private SharedPreferences sharedPreferences;
 	private SharedPreferences.Editor editor;
+	private boolean voiceSupport;
+	public static Handler finishHandlerStart;
+	public static Handler finishHandlerEnd;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -79,20 +82,44 @@ public class NewProfileActivityB extends AppCompatActivity {
 		}
 
 
-		tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-			@Override
-			public void onInit(int status) {
-				if(status != TextToSpeech.ERROR) {
-					tts.setLanguage(Locale.getDefault());
+		voiceSupport = sharedPreferences.getBoolean("VoiceSupport", true);
+
+		if(voiceSupport)
+			tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+				@Override
+				public void onInit(int status) {
+					if(status != TextToSpeech.ERROR) {
+						tts.setLanguage(Locale.getDefault());
+					}
 				}
-			}
-		});
+			});
 
 		try {
 			Thread.sleep(100);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+
+		if(start)
+			finishHandlerStart = new Handler() {
+
+				public void handleMessage(Message msg) {
+					super.handleMessage(msg);
+
+					finish();
+				}
+
+			};
+		else
+			finishHandlerEnd = new Handler() {
+
+				public void handleMessage(Message msg) {
+					super.handleMessage(msg);
+
+					finish();
+				}
+
+			};
 
 		/*if (!VoiceSupport.isTalkBackEnabled(this))
 			if((start && editProfileN == -1) || (editProfileN != -1 && departure)) {
@@ -108,7 +135,8 @@ public class NewProfileActivityB extends AppCompatActivity {
 		// verificare sia attivo (accenderlo), prendere la posizione e mostrarla come indirizzo chiedendo se si vuol salvare come preferito, comunque sia chiedere la distanza a piedi, poi chiamare la nuova activity
 		if(!VoiceSupport.isTalkBackEnabled(this))
 			Toast.makeText(NewProfileActivityB.this, "GPS, attendere", Toast.LENGTH_SHORT).show();
-		tts.speak("GPS, attendere", TextToSpeech.QUEUE_FLUSH, null);
+		if(voiceSupport)
+			tts.speak("GPS, attendere", TextToSpeech.QUEUE_FLUSH, null);
 		
 		findViewById(R.id.progressBar_newProfile).setVisibility(View.VISIBLE);
 		findViewById(R.id.gps).setVisibility(View.GONE);
@@ -159,10 +187,11 @@ public class NewProfileActivityB extends AppCompatActivity {
 
 		if(!VoiceSupport.isTalkBackEnabled(this))
 			Toast.makeText(NewProfileActivityB.this, "Preferiti", Toast.LENGTH_SHORT).show();
-		tts.speak("Preferiti", TextToSpeech.QUEUE_FLUSH, null);
+		if(voiceSupport)
+			tts.speak("Preferiti", TextToSpeech.QUEUE_FLUSH, null);
 		
 		startActivity(intent);
-		finish();
+		//finish();
 	}
 
 	public void addressClick(View v){
@@ -178,20 +207,24 @@ public class NewProfileActivityB extends AppCompatActivity {
 			intent.putExtra("departure", departure);
 		}
 
-		tts.speak("Immettere Indirizzo", TextToSpeech.QUEUE_FLUSH, null);
+		if(voiceSupport)
+			tts.speak("Immettere Indirizzo", TextToSpeech.QUEUE_FLUSH, null);
 		if(!VoiceSupport.isTalkBackEnabled(this))
 			Toast.makeText(NewProfileActivityB.this, "Indirizzo", Toast.LENGTH_SHORT).show();
 		
 		startActivity(intent);
-		finish();
+		//finish();
 	}
 
 	private void confirmAddress(){	//GPS
 		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-		if(!VoiceSupport.isTalkBackEnabled(this)){
-			tts.speak("Trovato: " + address + " corretto?", TextToSpeech.QUEUE_FLUSH, null);
-		}
+		if(voiceSupport)
+			if(!VoiceSupport.isTalkBackEnabled(this)){
+				tts.speak("Trovato: " + address + " corretto?", TextToSpeech.QUEUE_FLUSH, null);
+			}
 		alertDialogBuilder
+				.setTitle("Conferma")
+				.setIcon(R.mipmap.ic_launcher)
 				.setMessage("Trovato:\n" + address + "\ncorretto?")
 				.setCancelable(false)
 				.setPositiveButton("Sì", new DialogInterface.OnClickListener() {
@@ -211,9 +244,12 @@ public class NewProfileActivityB extends AppCompatActivity {
 							editor.commit();
 							if(!VoiceSupport.isTalkBackEnabled(getApplicationContext()))
 								Toast.makeText(NewProfileActivityB.this, "Profilo modificato", Toast.LENGTH_SHORT).show();
-							tts.speak("Profilo modificato", TextToSpeech.QUEUE_FLUSH, null);
+							if(voiceSupport)
+								tts.speak("Profilo modificato", TextToSpeech.QUEUE_FLUSH, null);
 							dialog.cancel();
 							locationToolbox.stopUsingGPS();
+							EditActivityB.finishHandler.sendEmptyMessage(0);
+							EditDeleteActivityB.finishHandler.sendEmptyMessage(0);
 							finish();
 						}
 					}
@@ -229,7 +265,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 						startActivity(intent);
 						dialog.cancel();
 						locationToolbox.stopUsingGPS();
-						finish();
+						//finish();
 					}
 				});
 
@@ -239,10 +275,13 @@ public class NewProfileActivityB extends AppCompatActivity {
 
 	private void askFavorite(){
 		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-		if(!VoiceSupport.isTalkBackEnabled(this)){
-			tts.speak("Vuoi salvare il luogo tra i preferiti?", TextToSpeech.QUEUE_FLUSH, null);
-		}
+		if(voiceSupport)
+			if(!VoiceSupport.isTalkBackEnabled(this)){
+				tts.speak("Vuoi salvare il luogo tra i preferiti?", TextToSpeech.QUEUE_FLUSH, null);
+			}
 		alertDialogBuilder
+				.setTitle("Preferiti")
+				.setIcon(R.mipmap.ic_launcher)
 				.setMessage("Vuoi salvare il luogo tra i preferiti?")
 				.setCancelable(false)
 				.setPositiveButton("Sì", new DialogInterface.OnClickListener() {
@@ -270,9 +309,10 @@ public class NewProfileActivityB extends AppCompatActivity {
 			Intent intent = new Intent(getApplicationContext(), NewProfileActivityB.class);
 			intent.putExtra("Start", !start);
 			intent.putExtra("GPS", true);
-			tts.speak("Destinazione, selezionare metodo immissione", TextToSpeech.QUEUE_FLUSH, null);
+			if(voiceSupport)
+				tts.speak("Destinazione, selezionare metodo immissione", TextToSpeech.QUEUE_FLUSH, null);
 			startActivity(intent);
-			finish();
+			//finish();
 		}else{
 			startInputName(false);
 		}
@@ -284,14 +324,15 @@ public class NewProfileActivityB extends AppCompatActivity {
 		intent.putExtra("Name", true);
 		intent.putExtra("GPS", true);
 		intent.putExtra("Favorite", forFavorite);
-		if(!VoiceSupport.isTalkBackEnabled(getApplicationContext())) {
-			if (forFavorite)
-				tts.speak("Immettere nome preferito", TextToSpeech.QUEUE_FLUSH, null);
-			else
-				tts.speak("Immettere nome profilo", TextToSpeech.QUEUE_FLUSH, null);
-		}
+		if(voiceSupport)
+			if(!VoiceSupport.isTalkBackEnabled(getApplicationContext())) {
+				if (forFavorite)
+					tts.speak("Immettere nome preferito", TextToSpeech.QUEUE_FLUSH, null);
+				else
+					tts.speak("Immettere nome profilo", TextToSpeech.QUEUE_FLUSH, null);
+			}
 		startActivity(intent);
-		finish();
+		//finish();
 	}
 
 	private void saveLocation() {
@@ -326,6 +367,18 @@ public class NewProfileActivityB extends AppCompatActivity {
 		editor.putInt("NumProfiles", numProfiles);
 
 		editor.commit();
+
+		ProfileManagingActivityB.finishHandler.sendEmptyMessage(0);
+		try{
+			NewProfileActivityB.finishHandlerEnd.sendEmptyMessage(0);
+		}catch(Exception e){
+			Log.wtf("BACK STACK", "finishHandlerEnd non funziona");
+		}
+		try{
+			NewProfileActivityB.finishHandlerStart.sendEmptyMessage(0);
+		}catch(Exception e){
+			Log.wtf("BACK STACK", "finishHandlerStart non funziona");
+		}
 	}
 
 	@Override
@@ -357,5 +410,16 @@ public class NewProfileActivityB extends AppCompatActivity {
 			// other 'case' lines to check for other
 			// permissions this app might request
 		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		if(tts !=null){
+			while(tts.isSpeaking()){}
+			tts.stop();
+			tts.shutdown();
+		}
+
+		super.onDestroy();
 	}
 }

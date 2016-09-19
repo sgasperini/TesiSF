@@ -3,6 +3,7 @@ package unibo.progettotesi.activities;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -14,6 +15,7 @@ import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -29,6 +31,7 @@ import unibo.progettotesi.utilities.Filler;
 import unibo.progettotesi.utilities.HelloBus;
 import unibo.progettotesi.utilities.RealTimeTracker;
 import unibo.progettotesi.utilities.Time;
+import unibo.progettotesi.utilities.VoiceSupport;
 import unibo.progettotesi.utilities.Walking;
 
 public class BusWaitingActivity extends AppCompatActivity implements HelloBus, Walking {
@@ -45,6 +48,7 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 	private boolean otg;
 	private boolean updates = false;
 	private TextToSpeech tts;
+	private boolean voiceSupport;
 
 	@Override
 	protected void onStart() {
@@ -111,6 +115,8 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_bus_waiting);
 
+		setTitle("Alla Fermata");
+
 		otg = false;
 
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -159,14 +165,17 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 		findViewById(R.id.secondLeg).findViewById(R.id.distance_leg).setVisibility(View.GONE);
 		findViewById(R.id.thirdLeg).findViewById(R.id.distance_leg).setVisibility(View.GONE);
 
-		tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-			@Override
-			public void onInit(int status) {
-				if(status != TextToSpeech.ERROR) {
-					tts.setLanguage(Locale.getDefault());
+		voiceSupport = sharedPreferences.getBoolean("VoiceSupport", true);
+
+		if(voiceSupport)
+			tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+				@Override
+				public void onInit(int status) {
+					if(status != TextToSpeech.ERROR) {
+						tts.setLanguage(Locale.getDefault());
+					}
 				}
-			}
-		});
+			});
 	}
 
 	private void getETA() {
@@ -203,8 +212,10 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 			intent.putExtra("Bus", bus);
 		startActivity(intent);
 
-		Toast.makeText(BusWaitingActivity.this, "Sali", Toast.LENGTH_SHORT).show();
-		tts.speak("Sali", TextToSpeech.QUEUE_FLUSH, null);
+		if(!VoiceSupport.isTalkBackEnabled(this))
+			Toast.makeText(BusWaitingActivity.this, "Sali", Toast.LENGTH_SHORT).show();
+		if(voiceSupport)
+			tts.speak("Sali", TextToSpeech.QUEUE_FLUSH, null);
 
 		otg = true;
 		timer.cancel();
@@ -213,6 +224,7 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 
 	@Override
 	protected void onDestroy() {
+
 		Log.wtf("BusWaitingActivity", "ON DESTROY");
 		timer.cancel();
 		if(!otg){
@@ -228,22 +240,56 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 		}
 		if(locationListener != null)
 			locationListener = null;
+
+		if(tts !=null){
+			while(tts.isSpeaking()){}
+			tts.stop();
+			tts.shutdown();
+		}
+
 		super.onDestroy();
 	}
 
 	public void onBackPressed(){
-		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			//
-		}else if(lm != null){
-			Log.wtf("LOCATION UPDATES", "REMOVING BUSWAITING BACK");
-			lm.removeUpdates(locationListener);
-			lm = null;
-		}
-		if(locationListener != null)
-			locationListener = null;
-		editor.putString("CurrentRoute", "");
-		editor.commit();
-		super.onBackPressed();
+		final BusWaitingActivity busWaitingActivity = this;
+		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+		if(voiceSupport)
+			if(!VoiceSupport.isTalkBackEnabled(this)){
+				tts.speak("Confermi di tornare indietro?", TextToSpeech.QUEUE_FLUSH, null);
+			}
+		alertDialogBuilder
+				.setTitle("Conferma")
+				.setIcon(R.mipmap.ic_launcher)
+				.setMessage("Confermi di tornare indietro?")
+				.setCancelable(false)
+				.setPositiveButton("Sì", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						if (ActivityCompat.checkSelfPermission(busWaitingActivity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(busWaitingActivity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+							//
+						}else if(lm != null){
+							Log.wtf("LOCATION UPDATES", "REMOVING BUSWAITING BACK");
+							lm.removeUpdates(locationListener);
+							lm = null;
+						}
+						if(locationListener != null)
+							locationListener = null;
+						editor.putString("CurrentRoute", "");
+						editor.commit();
+						dialog.cancel();
+						BusWaitingActivity.super.onBackPressed();
+					}
+				})
+
+				.setNegativeButton("No", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+					}
+				});
+
+		AlertDialog alertDialog = alertDialogBuilder.create();
+		alertDialog.show();
 	}
 
 	private void getWalkingDistance(Location location){

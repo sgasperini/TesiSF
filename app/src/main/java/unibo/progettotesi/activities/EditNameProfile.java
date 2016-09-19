@@ -26,6 +26,7 @@ public class EditNameProfile extends AppCompatActivity {
 	private boolean address;
 	private boolean departure;
 	private TextToSpeech tts;
+	private boolean voiceSupport;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -46,14 +47,17 @@ public class EditNameProfile extends AppCompatActivity {
 
 		profileN = getIntent().getIntExtra("editProfileN", -1);
 
-		tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-			@Override
-			public void onInit(int status) {
-				if(status != TextToSpeech.ERROR) {
-					tts.setLanguage(Locale.getDefault());
+		voiceSupport = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("VoiceSupport", true);
+
+		if(voiceSupport)
+			tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+				@Override
+				public void onInit(int status) {
+					if(status != TextToSpeech.ERROR) {
+						tts.setLanguage(Locale.getDefault());
+					}
 				}
-			}
-		});
+			});
 	}
 
 	public void confirmInput(View view){
@@ -75,8 +79,11 @@ public class EditNameProfile extends AppCompatActivity {
 		editor.putString("ProfileN_" + profileN, currentProfile.savingString());
 		editor.commit();
 
-		tts.speak("Profilo modificato", TextToSpeech.QUEUE_FLUSH, null);
+		if(voiceSupport)
+			tts.speak("Profilo modificato", TextToSpeech.QUEUE_FLUSH, null);
 
+		EditActivityB.finishHandler.sendEmptyMessage(0);
+		EditDeleteActivityB.finishHandler.sendEmptyMessage(0);
 		finish();
 	}
 
@@ -116,5 +123,15 @@ public class EditNameProfile extends AppCompatActivity {
 		findViewById(R.id.confirm).setClickable(true);
 
 		return result;
+	}
+
+	@Override
+	protected void onDestroy() {
+		if(tts !=null){
+			while(tts.isSpeaking()){}
+			tts.stop();
+			tts.shutdown();
+		}
+		super.onDestroy();
 	}
 }

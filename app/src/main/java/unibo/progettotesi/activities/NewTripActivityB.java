@@ -23,6 +23,8 @@ public class NewTripActivityB extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.start_trip_activity_b);
 
+		setTitle("Seleziona Profilo");
+
 		List<Profile> profileList = getProfiles();
 
 		profilesAdapter = new ProfilesAdapter(this, R.layout.profile_b_list, profileList);

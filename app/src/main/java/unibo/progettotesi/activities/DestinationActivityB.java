@@ -3,6 +3,7 @@ package unibo.progettotesi.activities;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -10,18 +11,23 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Locale;
+
 import unibo.progettotesi.R;
 import unibo.progettotesi.model.Profile;
 import unibo.progettotesi.model.Route;
 import unibo.progettotesi.utilities.Constants;
 import unibo.progettotesi.utilities.RealTimeTracker;
+import unibo.progettotesi.utilities.VoiceSupport;
 import unibo.progettotesi.utilities.Walking;
 
 public class DestinationActivityB extends AppCompatActivity implements Walking{
@@ -35,6 +41,8 @@ public class DestinationActivityB extends AppCompatActivity implements Walking{
 	private SharedPreferences sharedPreferences;
 	private SharedPreferences.Editor editor;
 	private boolean updates = false;
+	private TextToSpeech tts;
+	private boolean voiceSupport;
 
 	@Override
 	protected void onStart() {
@@ -102,6 +110,8 @@ public class DestinationActivityB extends AppCompatActivity implements Walking{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.destination_activity_b);
 
+		setTitle("Cammino a Destinazione");
+
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		editor = sharedPreferences.edit();
 
@@ -116,6 +126,18 @@ public class DestinationActivityB extends AppCompatActivity implements Walking{
 		stop.setText(route.getEndStop().getName());
 		//meters
 		destination.setText(profile.getEnd().getLocation().getAddress());
+
+		voiceSupport = sharedPreferences.getBoolean("VoiceSupport", true);
+
+		if(voiceSupport)
+			tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+				@Override
+				public void onInit(int status) {
+					if(status != TextToSpeech.ERROR) {
+						tts.setLanguage(Locale.getDefault());
+					}
+				}
+			});
 	}
 
 	@Override
@@ -159,6 +181,7 @@ public class DestinationActivityB extends AppCompatActivity implements Walking{
 
 	@Override
 	protected void onDestroy() {
+
 		Log.wtf("DestinationActivity", "ON DESTROY");
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			//
@@ -171,21 +194,55 @@ public class DestinationActivityB extends AppCompatActivity implements Walking{
 			locationListener = null;
 		editor.putString("CurrentRoute", "");
 		editor.commit();
+
+		if(tts !=null){
+			while(tts.isSpeaking()){}
+			tts.stop();
+			tts.shutdown();
+		}
+
 		super.onDestroy();
 	}
 
 	public void onBackPressed(){
-		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			//
-		}else if(lm != null){
-			Log.wtf("LOCATION UPDATES", "REMOVING DEST BACK");
-			lm.removeUpdates(locationListener);
-			lm = null;
-		}
-		if(locationListener != null)
-			locationListener = null;
-		editor.putString("CurrentRoute", "");
-		editor.commit();
-		super.onBackPressed();
+		final DestinationActivityB destinationActivityB = this;
+		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+		if(voiceSupport)
+			if(!VoiceSupport.isTalkBackEnabled(this)){
+				tts.speak("Confermi di tornare indietro e perdere il percorso corrente?", TextToSpeech.QUEUE_FLUSH, null);
+			}
+		alertDialogBuilder
+				.setTitle("Conferma")
+				.setIcon(R.mipmap.ic_launcher)
+				.setMessage("Confermi di tornare indietro e perdere il percorso corrente?")
+				.setCancelable(false)
+				.setPositiveButton("Sì", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						if (ActivityCompat.checkSelfPermission(destinationActivityB, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(destinationActivityB, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+							//
+						}else if(lm != null){
+							Log.wtf("LOCATION UPDATES", "REMOVING DEST BACK");
+							lm.removeUpdates(locationListener);
+							lm = null;
+						}
+						if(locationListener != null)
+							locationListener = null;
+						editor.putString("CurrentRoute", "");
+						editor.commit();
+						dialog.cancel();
+						DestinationActivityB.super.onBackPressed();
+					}
+				})
+
+				.setNegativeButton("No", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+					}
+				});
+
+		AlertDialog alertDialog = alertDialogBuilder.create();
+		alertDialog.show();
 	}
 }

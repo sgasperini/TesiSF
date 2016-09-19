@@ -68,10 +68,15 @@
             android:name=".activities.EditDeleteActivityB"
             android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".activities.EditActivityB"
-                  android:screenOrientation="portrait">
+        <activity
+            android:name=".activities.EditActivityB"
+            android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".activities.EditNameProfile"
+        <activity
+            android:name=".activities.EditNameProfile"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity android:name=".activities.SettingsActivity"
                   android:screenOrientation="portrait">
         </activity>
     </application>

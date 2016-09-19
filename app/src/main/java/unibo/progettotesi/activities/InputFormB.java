@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AlertDialog;
@@ -36,6 +35,7 @@ public class InputFormB extends AppCompatActivity {
 	private double longitude;
 	private Location location;
 	private TextToSpeech tts;
+	private boolean voiceSupport;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -48,17 +48,22 @@ public class InputFormB extends AppCompatActivity {
 		name = getIntent().getBooleanExtra("Name", false);
 		favorite = getIntent().getBooleanExtra("Favorite", false);
 
+
+
 		editText = (EditText) findViewById(R.id.inputEditText);
 		editText.setTextSize(36);
 
-		tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-			@Override
-			public void onInit(int status) {
-				if(status != TextToSpeech.ERROR) {
-					tts.setLanguage(Locale.getDefault());
+		voiceSupport = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("VoiceSupport", true);
+
+		if(voiceSupport)
+			tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+				@Override
+				public void onInit(int status) {
+					if(status != TextToSpeech.ERROR) {
+						tts.setLanguage(Locale.getDefault());
+					}
 				}
-			}
-		});
+			});
 
 		boolean talkBack = VoiceSupport.isTalkBackEnabled(this);
 		if(address){
@@ -87,8 +92,10 @@ public class InputFormB extends AppCompatActivity {
 	private void setName() {
 		if(!favorite) {
 			NewProfileActivityB.saveProfile(this, editText.getText().toString());
-			tts.speak("Profilo salvato", TextToSpeech.QUEUE_FLUSH, null);
-			Toast.makeText(InputFormB.this, "Profilo Salvato", Toast.LENGTH_SHORT).show();
+			if(voiceSupport)
+				tts.speak("Profilo salvato", TextToSpeech.QUEUE_FLUSH, null);
+			if(!VoiceSupport.isTalkBackEnabled(this))
+				Toast.makeText(InputFormB.this, "Profilo Salvato", Toast.LENGTH_SHORT).show();
 			finish();
 		}else {
 			SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -105,8 +112,10 @@ public class InputFormB extends AppCompatActivity {
 			editor.putString("FavoriteN_" + numFavorites, place.savingStringFavorite());
 			editor.putInt("NumFavorites", numFavorites);
 
-			tts.speak(editText.getText().toString() + " salvato", TextToSpeech.QUEUE_FLUSH, null);
-			Toast.makeText(InputFormB.this, editText.getText().toString() + " salvato", Toast.LENGTH_SHORT).show();
+			if(voiceSupport)
+				tts.speak(editText.getText().toString() + " salvato", TextToSpeech.QUEUE_FLUSH, null);
+			if(!VoiceSupport.isTalkBackEnabled(this))
+				Toast.makeText(InputFormB.this, editText.getText().toString() + " salvato", Toast.LENGTH_SHORT).show();
 
 			editor.commit();
 
@@ -121,7 +130,8 @@ public class InputFormB extends AppCompatActivity {
 
 		if(addressToCoordinates()) {
 
-			tts.speak("Inserito " + editText.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
+			if(voiceSupport)
+				tts.speak("Inserito " + editText.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
 
 			location = new Location(latitude, longitude, editText.getText().toString());
 
@@ -133,8 +143,10 @@ public class InputFormB extends AppCompatActivity {
 			if (cont < 4)
 				setAddress(cont + 1);
 			else {
-				Toast.makeText(InputFormB.this, "Indirizzo non trovato", Toast.LENGTH_SHORT).show();
-				tts.speak("Indirizzo non trovato", TextToSpeech.QUEUE_FLUSH, null);
+				if(!VoiceSupport.isTalkBackEnabled(this))
+					Toast.makeText(InputFormB.this, "Indirizzo non trovato", Toast.LENGTH_SHORT).show();
+				if(voiceSupport)
+					tts.speak("Indirizzo non trovato", TextToSpeech.QUEUE_FLUSH, null);
 			}
 		}
 	}
@@ -191,10 +203,13 @@ public class InputFormB extends AppCompatActivity {
 
 	private void askFavorite(){
 		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-		if(!VoiceSupport.isTalkBackEnabled(this)){
-			tts.speak("Vuoi salvare il luogo tra i preferiti?", TextToSpeech.QUEUE_FLUSH, null);
-		}
+		if(voiceSupport)
+			if(!VoiceSupport.isTalkBackEnabled(this)){
+				tts.speak("Vuoi salvare il luogo tra i preferiti?", TextToSpeech.QUEUE_FLUSH, null);
+			}
 		alertDialogBuilder
+				.setTitle("Preferiti")
+				.setIcon(R.mipmap.ic_launcher)
 				.setMessage("Vuoi salvare il luogo tra i preferiti?")
 				.setCancelable(false)
 				.setPositiveButton("Sì", new DialogInterface.OnClickListener() {
@@ -221,18 +236,21 @@ public class InputFormB extends AppCompatActivity {
 		intent.putExtra("Start", start);
 		intent.putExtra("Name", true);
 		intent.putExtra("Favorite", forFavorite);
-		if(!VoiceSupport.isTalkBackEnabled(getApplicationContext())) {
-			if (forFavorite)
-				tts.speak("Immettere nome preferito", TextToSpeech.QUEUE_FLUSH, null);
-			else
-				tts.speak("Immettere nome profilo", TextToSpeech.QUEUE_FLUSH, null);
-		}
+		if(voiceSupport)
+			if(!VoiceSupport.isTalkBackEnabled(getApplicationContext())) {
+				if (forFavorite)
+					tts.speak("Immettere nome preferito", TextToSpeech.QUEUE_FLUSH, null);
+				else
+					tts.speak("Immettere nome profilo", TextToSpeech.QUEUE_FLUSH, null);
+			}
 		startActivity(intent);
 		finish();
 	}
 
 	private void continueProfileCreation(DialogInterface dialog, boolean savingFavorite){
 		if(start && !savingFavorite) {
+			//NewProfileActivityB.finishHandler.sendEmptyMessage(0);
+
 			Intent intent = new Intent(getApplicationContext(), NewProfileActivityB.class);
 			intent.putExtra("Start", !start);
 			intent.putExtra("GPS", gps);
@@ -242,8 +260,18 @@ public class InputFormB extends AppCompatActivity {
 		}
 		if(dialog != null)
 			dialog.cancel();
+
 		finish();
 	}
 
+	@Override
+	protected void onDestroy() {
+		if(tts !=null){
+			while(tts.isSpeaking()){}
+			tts.stop();
+			tts.shutdown();
+		}
 
+		super.onDestroy();
+	}
 }

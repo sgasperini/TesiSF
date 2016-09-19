@@ -28,6 +28,8 @@ public class SelectRouteActivityB extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.select_route_activity_b);
 
+		setTitle("Seleziona Percorso");
+
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
 		profile = Profile.getProfileFromString(sharedPreferences.getString("CurrentProfile", ""));

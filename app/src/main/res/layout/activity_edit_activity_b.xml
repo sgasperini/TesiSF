@@ -62,7 +62,7 @@
             style="?android:attr/borderlessButtonStyle"
             android:onClick="arrivalClick"
             android:background="#00897b"
-            android:contentDescription="Arrivo"/>
+            android:contentDescription="Destinazione"/>
     </LinearLayout>
 
 
