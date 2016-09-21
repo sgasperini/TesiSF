@@ -191,6 +191,7 @@ public class Route {
 					stringTokenizer = new StringTokenizer(legR.getTransport().getRouteId(), "_");
 					stringTokenizer.nextToken();
 					stringTokenizer.nextToken();
+					stringTokenizer.nextToken(); //aggiunto dopo il cambio API, routeID era diverso
 					int direction = Integer.parseInt(stringTokenizer.nextToken());
 					calendar.setTimeInMillis(legR.getStartime());
 					Time departure = new Time(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE));

@@ -11,6 +11,7 @@ Da sistemare:
 
 da fare prossima volta
 - se si preme indietro mentre si naviga deve chiedere se terminare o no - TESTARE
+- back stack per il bus
 
 
 problemi esterni
@@ -33,3 +34,4 @@ possibili aggiunte:
 - ordinare profili in base al più probabile o anche a quelli che partono più vicini
 - comandi vocali
 - aggiunta pulsante percorso immediato quando selezioni il profilo da usare
+- partenza con orario
