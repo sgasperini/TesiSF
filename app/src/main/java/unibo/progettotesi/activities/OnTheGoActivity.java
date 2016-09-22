@@ -11,6 +11,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Message;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
@@ -39,6 +41,7 @@ import unibo.progettotesi.utilities.VoiceSupport;
 import unibo.progettotesi.utilities.Walking;
 
 public class OnTheGoActivity extends AppCompatActivity implements HelloBus, Walking {
+	public static Handler notificationHandler;
 	private Route route;
 	private Leg currentLeg;
 	private int nLeg;
@@ -217,58 +220,75 @@ public class OnTheGoActivity extends AppCompatActivity implements HelloBus, Walk
 					}
 				}
 			});
+
+		notificationHandler = new Handler() {
+			public void handleMessage(Message msg) {
+				super.handleMessage(msg);
+
+				getOff(null);
+			}
+		};
 	}
 
 	public void getOff(View view) {
-		final OnTheGoActivity onTheGoActivity = this;
-		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-		if(voiceSupport)
-			if(!VoiceSupport.isTalkBackEnabled(this)){
-				tts.speak("Confermi di voler scendere dall'autobus?", TextToSpeech.QUEUE_FLUSH, null);
-			}
-		alertDialogBuilder
-				.setTitle("Conferma")
-				.setIcon(R.mipmap.ic_launcher)
-				.setMessage("Confermi di voler scendere dall'autobus?")
-				.setCancelable(false)
-				.setPositiveButton("Sì", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						if(!VoiceSupport.isTalkBackEnabled(onTheGoActivity))
-							Toast.makeText(OnTheGoActivity.this, "Discesa", Toast.LENGTH_SHORT).show();
-						if(voiceSupport)
-							tts.speak("Discesa", TextToSpeech.QUEUE_FLUSH, null);
-
-						if (nLeg == (route.getLegs().size() - 1)) {
-							Intent intent = new Intent(onTheGoActivity, DestinationActivityB.class);
-							startActivity(intent);
-						} else {
-							Intent intent = new Intent(onTheGoActivity, BusWaitingActivity.class);
-							intent.putExtra("NLeg", nLeg + 1);
-							startActivity(intent);
+		if(view == null)
+			getActuallyOff();
+		else {
+			final OnTheGoActivity onTheGoActivity = this;
+			AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+			if (voiceSupport)
+				if (!VoiceSupport.isTalkBackEnabled(this)) {
+					tts.speak("Confermi di voler scendere dall'autobus?", TextToSpeech.QUEUE_FLUSH, null);
+				}
+			alertDialogBuilder
+					.setTitle("Conferma")
+					.setIcon(R.mipmap.ic_launcher)
+					.setMessage("Confermi di voler scendere dall'autobus?")
+					.setCancelable(false)
+					.setPositiveButton("Sì", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.cancel();
+							getActuallyOff();
 						}
+					})
+
+					.setNegativeButton("No", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.cancel();
+						}
+					});
+
+			AlertDialog alertDialog = alertDialogBuilder.create();
+			alertDialog.show();
+		}
+	}
+
+	private void getActuallyOff(){
+		if(!VoiceSupport.isTalkBackEnabled(this))
+			Toast.makeText(OnTheGoActivity.this, "Discesa", Toast.LENGTH_SHORT).show();
+		if(voiceSupport)
+			tts.speak("Discesa", TextToSpeech.QUEUE_FLUSH, null);
+
+		if (nLeg == (route.getLegs().size() - 1)) {
+			Intent intent = new Intent(this, DestinationActivityB.class);
+			startActivity(intent);
+		} else {
+			Intent intent = new Intent(this, BusWaitingActivity.class);
+			intent.putExtra("NLeg", nLeg + 1);
+			startActivity(intent);
+		}
 	/*	if(locationToolbox != null)
 			locationToolbox.stopUsingGPS();*/
 
-						editor.putString("LastStop", "");
-						editor.commit();
+		editor.putString("LastStop", "");
+		editor.commit();
 
-						dialog.cancel();
+		MainActivity.endActivityHandlerOnTheGo.sendEmptyMessage(0);
 
-						finish();
-						timer.cancel();
-					}
-				})
-
-				.setNegativeButton("No", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.cancel();
-					}
-				});
-
-		AlertDialog alertDialog = alertDialogBuilder.create();
-		alertDialog.show();
+		finish();
+		timer.cancel();
 	}
 
 	private void getETA() {
@@ -316,6 +336,8 @@ public class OnTheGoActivity extends AppCompatActivity implements HelloBus, Walk
 		previousS.setText(previousStop.getName());
 		nextS.setText(stopsToGo.get(0).getName());
 		nStops.setText("Fermate a scendere: " + (stopsToGo.size() - 1));
+		if(stopsToGo.size() - 1 < 3)
+			MainActivity.startActivityHandlerOnTheGo.sendEmptyMessage(0);
 		if (location == null)
 			distance.setText("Metri: " + (int) LocationToolbox.distance(previousStop.getLocation().getLatitude(), stopsToGo.get(0).getLocation().getLatitude(), previousStop.getLocation().getLongitude(), stopsToGo.get(0).getLocation().getLongitude(), 0.0, 0.0));
 		else
@@ -529,6 +551,8 @@ public class OnTheGoActivity extends AppCompatActivity implements HelloBus, Walk
 			tts.stop();
 			tts.shutdown();
 		}
+
+		MainActivity.endActivityHandlerOnTheGo.sendEmptyMessage(0);
 
 		super.onDestroy();
 	}

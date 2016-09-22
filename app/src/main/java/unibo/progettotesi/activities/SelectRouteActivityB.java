@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.ListView;
 
 import java.util.List;
+import java.util.StringTokenizer;
 
 import unibo.progettotesi.R;
 import unibo.progettotesi.adapters.RoutesAdapter;
@@ -22,6 +23,8 @@ public class SelectRouteActivityB extends AppCompatActivity {
 	private RouteFinder routeFinder;
 	private List<Route> routeList;
 	private Profile profile;
+	private boolean departureTime;
+	private Time time;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -30,11 +33,16 @@ public class SelectRouteActivityB extends AppCompatActivity {
 
 		setTitle("Seleziona Percorso");
 
+		departureTime = getIntent().getBooleanExtra("departureTime", true);
+		String timeS = getIntent().getStringExtra("time");
+		StringTokenizer stringTokenizer = new StringTokenizer(timeS, ":");
+		time = new Time(Integer.parseInt(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken()));
+
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
 		profile = Profile.getProfileFromString(sharedPreferences.getString("CurrentProfile", ""));
 
-		routeFinder = new RouteFinder(profile.getStart(), profile.getEnd(), Time.now());
+		routeFinder = new RouteFinder(profile.getStart(), profile.getEnd(), time, departureTime);
 		/*routeList = */routeFinder.calculateRoutes(this);
 	}
 

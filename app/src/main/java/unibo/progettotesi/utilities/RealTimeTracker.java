@@ -130,6 +130,15 @@ public class RealTimeTracker {
 		Time time = new Time(currentLeg.getStartTime().getHour(), currentLeg.getStartTime().getMinute(), 0);
 		Date date = currentLeg.getStartDate();
 
+// LEVA STO SCHIFO!!!!! E ANCHE IL COMMENTO ALL'IF DI SOTTO
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.DAY_OF_MONTH, -28);
+		calendar.set(Calendar.HOUR, time.hour);
+		calendar.set(Calendar.MINUTE, time.minute);
+		date.setDay(calendar.get(Calendar.DAY_OF_MONTH));
+		date.setMonth(calendar.get(Calendar.MONTH));
+		date.setYear(calendar.get(Calendar.YEAR));
+
 		Call<Response> queryResponseCall = service.requestStops(new Request(
 				date, (first ? currentLeg.getDirection() : (currentLeg.getDirection() == 0 ? 1 : 0)), currentLeg.getLine().getName(),
 				currentLeg.getStartStop().getCode() + "", 1, currentLeg.getEndStop().getCode() + "",
@@ -142,10 +151,10 @@ public class RealTimeTracker {
 					try{
 						if(response.body() != null && response.code() == 200){
 							boolean found = false;
-							if(response.body().trip.tripId.equals(currentLeg.getLine().getTripID())) {
+					//		if(response.body().trip.tripId.equals(currentLeg.getLine().getTripID())) {
 								stopToInterStopConverter(response.body().trip.stops);
 								found = true;
-							}
+					//		}
 							if(!found && !antiLoop){
 								getStopsFromWeb(onTheGoActivity, currentLeg, !first);
 								antiLoop = true;

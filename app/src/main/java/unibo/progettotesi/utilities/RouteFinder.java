@@ -9,41 +9,35 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.GsonConverterFactory;
 import retrofit2.Retrofit;
-import retrofit2.http.Body;
 import retrofit2.http.GET;
-import retrofit2.http.POST;
 import retrofit2.http.Query;
 import unibo.progettotesi.activities.SelectRouteActivityB;
 import unibo.progettotesi.json.planner.Response;
-import unibo.progettotesi.model.Leg;
-import unibo.progettotesi.model.Line;
-import unibo.progettotesi.model.Location;
 import unibo.progettotesi.model.Place;
 import unibo.progettotesi.model.Route;
-import unibo.progettotesi.model.Stop;
 
 public class RouteFinder {
 	private Place startPlace;
 	private Place endPlace;
-	private Time startTime;
+	private Time timeSet;
 	private List<Route> routes;
+	private boolean departureTime;
 
-	public RouteFinder(Place startPlace, Place endPlace, Time startTime) {
+	public RouteFinder(Place startPlace, Place endPlace, Time timeSet, boolean departureTime) {
 		this.startPlace = startPlace;
 		this.endPlace = endPlace;
-		this.startTime = startTime;
+		this.timeSet = timeSet;
+		this.departureTime = departureTime;
 		routes = new ArrayList<Route>();
 	}
 
 	public RouteFinder(Place startPlace, Place endPlace) {
-		new RouteFinder(startPlace, endPlace, Time.now());
+		new RouteFinder(startPlace, endPlace, Time.now(), true);
 	}
 
 	public void calculateRoutes(SelectRouteActivityB selectRouteActivityB){	//DA RIVEDERE
@@ -58,7 +52,8 @@ public class RouteFinder {
 
 		RequestPlan service = retrofit.create(RequestPlan.class);
 		String date = new SimpleDateFormat("MM/dd/yyyy").format(Calendar.getInstance().getTime());
-		String time = unibo.progettotesi.utilities.Time.now().toString();
+		String startTimeS = (departureTime ? timeSet.toString() : Time.now().toString());
+		String endTimeS = (departureTime ? "" : timeSet.toString());
 
 		URL url = null;
 		HttpURLConnection connection = null;
@@ -71,11 +66,20 @@ public class RouteFinder {
 		}
 		Log.wtf("TIMEOUT", connection.getConnectTimeout() + "\t" + connection.getReadTimeout());
 
-		Call<List<unibo.progettotesi.json.planner.Response>> queryResponseCall = service.requestPlan(
-				startPlace.getLocation().getLatitude() + "," + startPlace.getLocation().getLongitude(),
-				endPlace.getLocation().getLatitude() + "," + endPlace.getLocation().getLongitude(),
-				date,
-				time, "TRANSIT", "fastest", 5);
+		Call<List<unibo.progettotesi.json.planner.Response>> queryResponseCall;
+		if(departureTime){
+			 queryResponseCall = service.requestPlanDeparture(
+					startPlace.getLocation().getLatitude() + "," + startPlace.getLocation().getLongitude(),
+					endPlace.getLocation().getLatitude() + "," + endPlace.getLocation().getLongitude(),
+					date,
+					startTimeS, "TRANSIT", "fastest", 5);
+		}else{
+			queryResponseCall = service.requestPlan(
+					startPlace.getLocation().getLatitude() + "," + startPlace.getLocation().getLongitude(),
+					endPlace.getLocation().getLatitude() + "," + endPlace.getLocation().getLongitude(),
+					date, endTimeS,
+					startTimeS, "TRANSIT", "fastest", 5);
+		}
 
 		queryResponseCall.enqueue(new Callback<List<unibo.progettotesi.json.planner.Response>>(){
 
@@ -116,9 +120,19 @@ public class RouteFinder {
 		Call<List<unibo.progettotesi.json.planner.Response>> requestPlan(@Query("from") String from,
 																   @Query("to") String to,
 																   @Query("date") String date,
+																   @Query("arrivalTime") String arrivalTime,
 																   @Query("departureTime") String departureTime,
 																   @Query("transportType") String transportType,
 																   @Query("routeType") String routeType,
 																   @Query("numOfItn") int numOfItn);
+
+		@GET("bologna/rest/plan")
+		Call<List<unibo.progettotesi.json.planner.Response>> requestPlanDeparture(@Query("from") String from,
+																		 @Query("to") String to,
+																		 @Query("date") String date,
+																		 @Query("departureTime") String departureTime,
+																		 @Query("transportType") String transportType,
+																		 @Query("routeType") String routeType,
+																		 @Query("numOfItn") int numOfItn);
 	}
 }

@@ -265,7 +265,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 						startActivity(intent);
 						dialog.cancel();
 						locationToolbox.stopUsingGPS();
-						//finish();
+						finish();
 					}
 				});
 

@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
 
     <application
         android:allowBackup="true"
@@ -79,6 +80,8 @@
         <activity android:name=".activities.SettingsActivity"
                   android:screenOrientation="portrait">
         </activity>
+        <service android:name=".utilities.ActivityRecognitionService" />
+        <service android:name=".utilities.ActivityRecognitionService$NotificationActionService" />
     </application>
 
 </manifest>

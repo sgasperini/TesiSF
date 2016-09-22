@@ -12,6 +12,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
@@ -36,10 +38,10 @@ import unibo.progettotesi.utilities.Walking;
 
 public class BusWaitingActivity extends AppCompatActivity implements HelloBus, Walking {
 	private Route route;
-	private int nLeg;
+	public static int nLeg;
 	private CountDownTimer timer;
 	private BusWaitingActivity busWaitingActivity;
-	private String bus = null;
+	public static String bus = null;
 	private LocationListener locationListener = new WalkingLocationListener();
 	private LocationManager lm;
 	private boolean failedDistance = false;
@@ -49,6 +51,7 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 	private boolean updates = false;
 	private TextToSpeech tts;
 	private boolean voiceSupport;
+	public static Handler notificationHandler;
 
 	@Override
 	protected void onStart() {
@@ -176,6 +179,16 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 					}
 				}
 			});
+
+		MainActivity.startActivityHandlerBusWaiting.sendEmptyMessage(0);
+
+		notificationHandler = new Handler() {
+			public void handleMessage(Message msg) {
+				super.handleMessage(msg);
+
+				getOn(null);
+			}
+		};
 	}
 
 	private void getETA() {
@@ -219,6 +232,9 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 
 		otg = true;
 		timer.cancel();
+
+		MainActivity.endActivityHandlerBusWaiting.sendEmptyMessage(0);
+
 		finish();
 	}
 
@@ -246,6 +262,8 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 			tts.stop();
 			tts.shutdown();
 		}
+
+		MainActivity.endActivityHandlerBusWaiting.sendEmptyMessage(0);
 
 		super.onDestroy();
 	}

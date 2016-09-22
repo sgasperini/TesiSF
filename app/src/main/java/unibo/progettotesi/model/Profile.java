@@ -1,11 +1,17 @@
 package unibo.progettotesi.model;
 
+import android.content.Context;
+import android.location.*;
+
 import java.util.StringTokenizer;
 
-public class Profile {
+import unibo.progettotesi.utilities.LocationToolbox;
+
+public class Profile implements Comparable{
 	private Place start;
 	private Place end;
 	private String name;
+	private Integer distance;
 
 	public Profile(Place start, Place end, String name) {
 		this.start = start;
@@ -44,5 +50,21 @@ public class Profile {
 	public static Profile getProfileFromString(String saved){
 		StringTokenizer stringTokenizer = new StringTokenizer(saved, "∫");
 		return new Profile (Place.getPlaceFromString(stringTokenizer.nextToken()), Place.getPlaceFromString(stringTokenizer.nextToken()), stringTokenizer.nextToken());
+	}
+
+
+	@Override
+	public int compareTo(Object otherObj) {
+		Profile other = (Profile) otherObj;
+
+		return distance.compareTo(other.distance);
+	}
+
+	public void setDistance(Integer distance) {
+		this.distance = distance;
+	}
+
+	public Integer getDistance() {
+		return distance;
 	}
 }

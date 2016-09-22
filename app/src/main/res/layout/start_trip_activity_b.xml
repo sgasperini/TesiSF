@@ -31,5 +31,45 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_above="@+id/imageButton4"/>
+        android:layout_above="@+id/linearLayoutTimeOptions"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/linearLayoutTimeOptions"
+        android:layout_marginTop="5dp">
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Partenza alle"
+            android:id="@+id/buttonPlanningTime"
+            style="?android:attr/borderlessButtonStyle"
+            android:background="#00897b"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_weight="1"
+            android:textColor="#000000"
+            android:onClick="changeTimeOption"/>
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="15 : 30"
+            android:id="@+id/buttonTimePicker"
+            style="?android:attr/borderlessButtonStyle"
+            android:background="#26a69a"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_weight="1"
+            android:textColor="#000000"
+            android:onClick="openTimePicker"/>
+    </LinearLayout>
 </RelativeLayout>
