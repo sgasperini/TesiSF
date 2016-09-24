@@ -38,8 +38,8 @@ public class NewTripActivityB extends AppCompatActivity {
 	private Button timePickerButton;
 	private boolean departureTime = true;
 	private CountDownTimer timer;
-	private double latitude;
-	private double longitude;
+	private double latitude = 0.0;
+	private double longitude = 0.0;
 	private LocationManager lm;
 
 	@Override
@@ -61,9 +61,21 @@ public class NewTripActivityB extends AppCompatActivity {
 						Constants.PERMISSION_LOCATION_REQUEST);
 			}
 		}else{
-			Location location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-			latitude = location.getLatitude();
-			longitude = location.getLongitude();
+			try {
+				Location location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+				/*if (location == null)
+					location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);*/
+				if (location == null)
+					location = lm.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+				if (location == null) {
+					Toast.makeText(NewTripActivityB.this, "Impossibile ottenere ultima posizione nota", Toast.LENGTH_SHORT).show();
+					return;
+				}
+				latitude = location.getLatitude();
+				longitude = location.getLongitude();
+			}catch(Exception e){
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -80,6 +92,14 @@ public class NewTripActivityB extends AppCompatActivity {
 							return;
 						}
 						Location location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+						/*if(location == null)
+							location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);*/
+						if (location == null)
+							location = lm.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+						if(location == null){
+							Toast.makeText(NewTripActivityB.this, "Impossibile ottenere ultima posizione nota", Toast.LENGTH_SHORT).show();
+							return;
+						}
 						latitude = location.getLatitude();
 						longitude = location.getLongitude();
 					}catch(Exception e){
@@ -137,7 +157,10 @@ public class NewTripActivityB extends AppCompatActivity {
 		for (int i = 1; i <= numProfiles; i++) {
 			output.add(Profile.getProfileFromString(preferences.getString("ProfileN_" + i, "")));
 			Profile profile = output.get(output.size() - 1);
-			output.get(output.size() - 1).setDistance((int) LocationToolbox.distance(latitude, profile.getStart().getLocation().getLatitude(), longitude, profile.getStart().getLocation().getLongitude(), 0.0, 0.0));
+			if(latitude != 0.0)
+				output.get(output.size() - 1).setDistance((int) LocationToolbox.distance(latitude, profile.getStart().getLocation().getLatitude(), longitude, profile.getStart().getLocation().getLongitude(), 0.0, 0.0));
+			else
+				output.get(output.size() - 1).setDistance(new Integer(30000));
 		}
 		Collections.sort(output);
 		return output;
