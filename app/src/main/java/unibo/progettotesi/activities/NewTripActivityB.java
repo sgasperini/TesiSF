@@ -9,7 +9,10 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -23,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import unibo.progettotesi.R;
 import unibo.progettotesi.adapters.ProfilesAdapter;
@@ -30,6 +34,7 @@ import unibo.progettotesi.model.Profile;
 import unibo.progettotesi.utilities.Constants;
 import unibo.progettotesi.utilities.LocationToolbox;
 import unibo.progettotesi.utilities.Time;
+import unibo.progettotesi.utilities.VoiceSupport;
 
 public class NewTripActivityB extends AppCompatActivity {
 	private boolean start;
@@ -41,6 +46,9 @@ public class NewTripActivityB extends AppCompatActivity {
 	private double latitude = 0.0;
 	private double longitude = 0.0;
 	private LocationManager lm;
+	public static Handler finishHandler;
+	private TextToSpeech tts;
+	private boolean voiceSupport;
 
 	@Override
 	protected void onStart() {
@@ -147,6 +155,28 @@ public class NewTripActivityB extends AppCompatActivity {
 			}
 		};
 		timer.start();
+
+		voiceSupport = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("VoiceSupport", true);
+
+		if(voiceSupport)
+			tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+				@Override
+				public void onInit(int status) {
+					if(status != TextToSpeech.ERROR) {
+						tts.setLanguage(Locale.getDefault());
+					}
+				}
+			});
+
+		finishHandler = new Handler() {
+
+			public void handleMessage(Message msg) {
+				super.handleMessage(msg);
+
+				finish();
+			}
+
+		};
 	}
 
 	private List<Profile> getProfiles() {
@@ -166,14 +196,49 @@ public class NewTripActivityB extends AppCompatActivity {
 		return output;
 	}
 
+	public void startSingleTrip(View v){
+		//prendere gps, aprire new profile activity senza gps e poi salvare in currentprofile
+
+		//prendere gps
+
+		Intent intent = new Intent(this, NewProfileActivityB.class);
+		intent.putExtra("Start", false);
+		intent.putExtra("GPS", true);
+		intent.putExtra("singleTrip", true);
+
+		SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+		editor.putBoolean("departureTime", departureTime);
+		editor.putString("time", timePickerButton.getText().toString());
+		editor.commit();
+
+		if(voiceSupport)
+			if(!VoiceSupport.isTalkBackEnabled(this)){
+				tts.speak("Percorso singolo. GPS, attendere", TextToSpeech.QUEUE_FLUSH, null);
+			}
+		Toast.makeText(this, "Percorso singolo\nGPS, attendere", Toast.LENGTH_SHORT).show();
+
+		startActivity(intent);
+	}
+
 	public void openTimePicker(View v){
+		if(voiceSupport)
+			if(!VoiceSupport.isTalkBackEnabled(this)){
+				tts.speak("Seleziona orario di " + (departureTime ? "partenza" : "arrivo"), TextToSpeech.QUEUE_FLUSH, null);
+			}
+		Toast.makeText(this, "Seleziona orario di " + (departureTime ? "partenza" : "arrivo"), Toast.LENGTH_SHORT).show();
+
 		TimePickerDialog timePickerDialog = new TimePickerDialog(this,
 				new TimePickerDialog.OnTimeSetListener() {
 					@Override
 					public void onTimeSet(TimePicker view, int hourOfDay,
 										  int minute) {
 						timer.cancel();
-						timePickerButton.setText(hourOfDay + ":" + minute);
+						timePickerButton.setText(new Time(hourOfDay,minute).toString());
+
+						if(voiceSupport)
+							if(!VoiceSupport.isTalkBackEnabled(view.getContext())){
+								tts.speak("Selezionato: " + timePickerButton.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
+							}
 					}
 				}, Time.now().getHour(), Time.now().getMinute(), false);
 		timePickerDialog.show();
@@ -182,6 +247,12 @@ public class NewTripActivityB extends AppCompatActivity {
 	public void changeTimeOption(View v){
 		departureTime = !departureTime;
 		timeOption.setText((departureTime ? "Partenza alle" : "Arrivo alle"));
+
+		if(voiceSupport)
+			if(!VoiceSupport.isTalkBackEnabled(this)){
+				tts.speak((departureTime ? "Partenza" : "Arrivo") + " alle: " + timePickerButton.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
+			}
+		Toast.makeText(this, (departureTime ? "Partenza" : "Arrivo") + " alle: " + timePickerButton.getText().toString(), Toast.LENGTH_SHORT).show();
 	}
 
 	public static void selectProfile(NewTripActivityB newTripActivityB, Profile profile){
@@ -193,6 +264,12 @@ public class NewTripActivityB extends AppCompatActivity {
 		editor.putString("CurrentProfile", profile.savingString());
 		editor.commit();
 
+		if(newTripActivityB.voiceSupport)
+			if(!VoiceSupport.isTalkBackEnabled(newTripActivityB)){
+				newTripActivityB.tts.speak("Seleziona percorso per: " + profile.getName(), TextToSpeech.QUEUE_FLUSH, null);
+			}
+		//Toast.makeText(newTripActivityB, "Selezionato: " + profile.getName(), Toast.LENGTH_SHORT).show();
+
 		Intent intent = new Intent(newTripActivityB, SelectRouteActivityB.class);
 
 		intent.putExtra("departureTime", newTripActivityB.departureTime);
@@ -200,12 +277,18 @@ public class NewTripActivityB extends AppCompatActivity {
 
 		newTripActivityB.startActivity(intent);
 
-		newTripActivityB.finish();
+		//newTripActivityB.finish();
 	}
 
 	@Override
 	protected void onDestroy() {
 		timer.cancel();
 		super.onDestroy();
+
+		if(tts !=null){
+			while(tts.isSpeaking()){}
+			tts.stop();
+			tts.shutdown();
+		}
 	}
 }

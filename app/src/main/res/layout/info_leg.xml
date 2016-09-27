@@ -36,7 +36,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Orario Real Time"
             android:id="@+id/busStartRealTime_leg"
             android:layout_gravity="center_horizontal"
@@ -63,12 +63,12 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Fermi"
             android:id="@+id/endStop_leg"
             android:layout_gravity="center_horizontal"
-            android:textSize="36dp"
-            android:gravity="center_horizontal"/>
+            android:gravity="center_horizontal"
+            android:textSize="25dp"/>
 
         <TextView
             android:layout_width="wrap_content"

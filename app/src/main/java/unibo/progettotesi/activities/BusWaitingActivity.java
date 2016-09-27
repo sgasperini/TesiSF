@@ -186,7 +186,7 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 			public void handleMessage(Message msg) {
 				super.handleMessage(msg);
 
-				getOn(null);
+				getActuallyOn();
 			}
 		};
 	}
@@ -203,6 +203,17 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 					"Bus previsto alle: " + route.getLegs().get(0).getStartTime() + "\nstimato da satellite in " + (difference == 0 ? "orario" :
 							(difference > 0 ? "ritardo" : "anticipo") + " di " + Math.abs(difference) + " minuti (" + time + ")"));
 			this.bus = bus;
+			if((difference = Math.abs(Time.getDifference(time, Time.now()))) == 0) {
+				if (voiceSupport)
+					if (!VoiceSupport.isTalkBackEnabled(this)) {
+						tts.speak("Autobus in arrivo a breve, prepararsi", TextToSpeech.QUEUE_FLUSH, null);
+					}
+			}else if(difference <= 5){
+				if (voiceSupport)
+					if (!VoiceSupport.isTalkBackEnabled(this)) {
+						tts.speak("Autobus in arrivo tra " + difference + (difference != 1 ? "minuti" : "minuto") + ". Tenersi pronti", TextToSpeech.QUEUE_FLUSH, null);
+					}
+			}
 		}else
 			failure();
 	}
@@ -210,6 +221,18 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 	public void failure(){
 		((TextView) findViewById(R.id.firstLeg).findViewById(R.id.busStartRealTime_leg)).setText(
 				"Bus previsto alle: " + route.getLegs().get(0).getStartTime());
+		int difference;
+		if((difference = Time.getDifference(Time.now(), route.getLegs().get(0).getStartTime())) == 0) {
+			if (voiceSupport)
+				if (!VoiceSupport.isTalkBackEnabled(this)) {
+					tts.speak("Autobus in arrivo a breve da orario, prepararsi", TextToSpeech.QUEUE_FLUSH, null);
+				}
+		}else if(difference <= 5){
+			if (voiceSupport)
+				if (!VoiceSupport.isTalkBackEnabled(this)) {
+					tts.speak("Autobus in arrivo da orario tra " + difference + (difference != 1 ? "minuti" : "minuto") + ". Tenersi pronti", TextToSpeech.QUEUE_FLUSH, null);
+				}
+		}
 	}
 
 	public void failureDistance(){
@@ -218,7 +241,36 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 	}
 
 	public void getOn(View view) {
-		//start next
+		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+		if(voiceSupport)
+			if(!VoiceSupport.isTalkBackEnabled(this)){
+				tts.speak("Confermi di salire?", TextToSpeech.QUEUE_FLUSH, null);
+			}
+		alertDialogBuilder
+				.setTitle("Conferma")
+				.setIcon(R.mipmap.ic_launcher)
+				.setMessage("Confermi di salire?")
+				.setCancelable(false)
+				.setPositiveButton("Sì", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						getActuallyOn();
+						BusWaitingActivity.super.onBackPressed();
+					}
+				})
+
+				.setNegativeButton("No", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+					}
+				});
+
+		AlertDialog alertDialog = alertDialogBuilder.create();
+		alertDialog.show();
+	}
+
+	public void getActuallyOn(){
 		Intent intent = new Intent(this, OnTheGoActivity.class);
 		intent.putExtra("NLeg", nLeg);
 		if(bus != null)
@@ -233,7 +285,13 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 		otg = true;
 		timer.cancel();
 
-		MainActivity.endActivityHandlerBusWaiting.sendEmptyMessage(0);
+		try {
+			MainActivity.endActivityHandlerBusWaiting.sendEmptyMessage(0);
+			NewTripActivityB.finishHandler.sendEmptyMessage(0);
+			SelectRouteActivityB.finishHandler.sendEmptyMessage(0);
+		}catch(Exception e){
+			Log.wtf("BusWaitingActivity", "PROBLEMA CON GLI HANDLER");
+		}
 
 		finish();
 	}
@@ -269,45 +327,18 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 	}
 
 	public void onBackPressed(){
-		final BusWaitingActivity busWaitingActivity = this;
-		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-		if(voiceSupport)
-			if(!VoiceSupport.isTalkBackEnabled(this)){
-				tts.speak("Confermi di tornare indietro?", TextToSpeech.QUEUE_FLUSH, null);
-			}
-		alertDialogBuilder
-				.setTitle("Conferma")
-				.setIcon(R.mipmap.ic_launcher)
-				.setMessage("Confermi di tornare indietro?")
-				.setCancelable(false)
-				.setPositiveButton("Sì", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						if (ActivityCompat.checkSelfPermission(busWaitingActivity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(busWaitingActivity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-							//
-						}else if(lm != null){
-							Log.wtf("LOCATION UPDATES", "REMOVING BUSWAITING BACK");
-							lm.removeUpdates(locationListener);
-							lm = null;
-						}
-						if(locationListener != null)
-							locationListener = null;
-						editor.putString("CurrentRoute", "");
-						editor.commit();
-						dialog.cancel();
-						BusWaitingActivity.super.onBackPressed();
-					}
-				})
-
-				.setNegativeButton("No", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.cancel();
-					}
-				});
-
-		AlertDialog alertDialog = alertDialogBuilder.create();
-		alertDialog.show();
+		if (ActivityCompat.checkSelfPermission(busWaitingActivity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(busWaitingActivity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			//
+		}else if(lm != null){
+			Log.wtf("LOCATION UPDATES", "REMOVING BUSWAITING BACK");
+			lm.removeUpdates(locationListener);
+			lm = null;
+		}
+		if(locationListener != null)
+			locationListener = null;
+		editor.putString("CurrentRoute", "");
+		editor.commit();
+		BusWaitingActivity.super.onBackPressed();
 	}
 
 	private void getWalkingDistance(Location location){

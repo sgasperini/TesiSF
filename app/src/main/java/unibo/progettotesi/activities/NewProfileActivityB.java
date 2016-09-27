@@ -34,6 +34,7 @@ import unibo.progettotesi.utilities.VoiceSupport;
 public class NewProfileActivityB extends AppCompatActivity {
 	private boolean start;
 	private boolean gpsStart;
+	private boolean singleTrip;
 	private double latitude;
 	private double longitude;
 	private String address;
@@ -61,6 +62,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 		start = getIntent().getBooleanExtra("Start", false);
 		gpsStart = getIntent().getBooleanExtra("GPS", false);
 		editProfileN = getIntent().getIntExtra("editProfileN", -1);
+		singleTrip = getIntent().getBooleanExtra("singleTrip", false);
 		if(editProfileN != -1) {
 			departure = getIntent().getBooleanExtra("departure", false);
 			editingProfile = Profile.getProfileFromString(sharedPreferences.getString("ProfileN_" + editProfileN, ""));
@@ -94,12 +96,6 @@ public class NewProfileActivityB extends AppCompatActivity {
 				}
 			});
 
-		try {
-			Thread.sleep(100);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
 		if(start)
 			finishHandlerStart = new Handler() {
 
@@ -120,6 +116,9 @@ public class NewProfileActivityB extends AppCompatActivity {
 				}
 
 			};
+
+		if(singleTrip)
+			gpsClick(null);
 
 		/*if (!VoiceSupport.isTalkBackEnabled(this))
 			if((start && editProfileN == -1) || (editProfileN != -1 && departure)) {
@@ -158,7 +157,8 @@ public class NewProfileActivityB extends AppCompatActivity {
 		place = new Place(location);
 
 		findViewById(R.id.progressBar_newProfile).setVisibility(View.GONE);
-		findViewById(R.id.gps).setVisibility(View.VISIBLE);
+		if(!singleTrip)
+			findViewById(R.id.gps).setVisibility(View.VISIBLE);
 		findViewById(R.id.preferiti).setVisibility(View.VISIBLE);
 		findViewById(R.id.indirizzo).setVisibility(View.VISIBLE);
 		findViewById(R.id.gps).setClickable(true);
@@ -184,6 +184,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 		intent.putExtra("Start", start);
 		intent.putExtra("departure", departure);
 		intent.putExtra("editProfileN", editProfileN);
+		intent.putExtra("singleTrip", singleTrip);
 
 		if(!VoiceSupport.isTalkBackEnabled(this))
 			Toast.makeText(NewProfileActivityB.this, "Preferiti", Toast.LENGTH_SHORT).show();
@@ -200,7 +201,8 @@ public class NewProfileActivityB extends AppCompatActivity {
 			intent = new Intent(this, InputFormB.class);
 			intent.putExtra("Start", start);
 			intent.putExtra("Address", true);
-		}else{
+			intent.putExtra("singleTrip", singleTrip);
+		}else{	//modifica
 			intent = new Intent(this, EditNameProfile.class);
 			intent.putExtra("Address", true);
 			intent.putExtra("editProfileN", editProfileN);
@@ -232,7 +234,8 @@ public class NewProfileActivityB extends AppCompatActivity {
 					public void onClick(DialogInterface dialog, int which) {
 						if(editProfileN == -1) {
 							saveLocation();
-							askFavorite();
+							if(!singleTrip)
+								askFavorite();
 							dialog.cancel();
 							locationToolbox.stopUsingGPS();
 						}else{
@@ -258,14 +261,19 @@ public class NewProfileActivityB extends AppCompatActivity {
 				.setNegativeButton("No", new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						Intent intent = new Intent(getApplicationContext(), NewProfileActivityB.class);
-						intent.putExtra("Start", start);
-						intent.putExtra("editProfileN", editProfileN);
-						intent.putExtra("departure", departure);
-						startActivity(intent);
-						dialog.cancel();
-						locationToolbox.stopUsingGPS();
-						finish();
+						if(singleTrip) {
+							gpsClick(null);
+							dialog.cancel();
+						}else {
+							Intent intent = new Intent(getApplicationContext(), NewProfileActivityB.class);
+							intent.putExtra("Start", start);
+							intent.putExtra("editProfileN", editProfileN);
+							intent.putExtra("departure", departure);
+							startActivity(intent);
+							dialog.cancel();
+							locationToolbox.stopUsingGPS();
+							finish();
+						}
 					}
 				});
 
@@ -340,10 +348,14 @@ public class NewProfileActivityB extends AppCompatActivity {
 		SharedPreferences.Editor editor = preferences.edit();
 
 		if(editProfileN == -1) {
-			if (start)
+			if(singleTrip)
 				editor.putString("StartTempPlace", place.savingString());
-			else
-				editor.putString("EndTempPlace", place.savingString());
+			else{
+				if (start)
+					editor.putString("StartTempPlace", place.savingString());
+				else
+					editor.putString("EndTempPlace", place.savingString());
+			}
 		}else{
 			if(departure)
 				editingProfile.setStart(place);
@@ -358,9 +370,10 @@ public class NewProfileActivityB extends AppCompatActivity {
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
 		SharedPreferences.Editor editor = preferences.edit();
 
-		int numProfiles = preferences.getInt("NumProfiles", 0) + 1;
 		Place placeStart = Place.getPlaceFromString(preferences.getString("StartTempPlace", ""));
 		Place placeEnd = Place.getPlaceFromString(preferences.getString("EndTempPlace", ""));
+
+		int numProfiles = preferences.getInt("NumProfiles", 0) + 1;
 
 		Profile profile = new Profile(placeStart, placeEnd, profileName);
 		editor.putString("ProfileN_" + numProfiles, profile.savingString());
@@ -374,6 +387,32 @@ public class NewProfileActivityB extends AppCompatActivity {
 		}catch(Exception e){
 			Log.wtf("BACK STACK", "finishHandlerEnd non funziona");
 		}
+		try{
+			NewProfileActivityB.finishHandlerStart.sendEmptyMessage(0);
+		}catch(Exception e){
+			Log.wtf("BACK STACK", "finishHandlerStart non funziona");
+		}
+	}
+
+	public static void saveSingleTripProfile(Context context) {
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+		SharedPreferences.Editor editor = preferences.edit();
+
+		Place placeStart = Place.getPlaceFromString(preferences.getString("StartTempPlace", ""));
+		Place placeEnd = Place.getPlaceFromString(preferences.getString("EndTempPlace", ""));
+
+		Profile profile = new Profile(placeStart, placeEnd, " ");
+		editor.putString("CurrentProfile", profile.savingString());
+
+		editor.commit();
+
+		Intent intent = new Intent(context, SelectRouteActivityB.class);
+
+		intent.putExtra("departureTime", preferences.getBoolean("departureTime", true));
+		intent.putExtra("time", preferences.getString("time", ""));
+
+		context.startActivity(intent);
+
 		try{
 			NewProfileActivityB.finishHandlerStart.sendEmptyMessage(0);
 		}catch(Exception e){

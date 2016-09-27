@@ -36,6 +36,7 @@ public class InputFormB extends AppCompatActivity {
 	private Location location;
 	private TextToSpeech tts;
 	private boolean voiceSupport;
+	private boolean singleTrip;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +48,7 @@ public class InputFormB extends AppCompatActivity {
 		address = getIntent().getBooleanExtra("Address", false);
 		name = getIntent().getBooleanExtra("Name", false);
 		favorite = getIntent().getBooleanExtra("Favorite", false);
-
-
+		singleTrip = getIntent().getBooleanExtra("singleTrip", false);
 
 		editText = (EditText) findViewById(R.id.inputEditText);
 		editText.setTextSize(36);
@@ -137,8 +137,13 @@ public class InputFormB extends AppCompatActivity {
 
 			saveLocation();
 
-			askFavorite();
-
+			if(!singleTrip)
+				askFavorite();
+			else {
+				NewProfileActivityB.saveSingleTripProfile(this);
+				finish();
+				NewProfileActivityB.finishHandlerEnd.sendEmptyMessage(0);
+			}
 		}else {
 			if (cont < 4)
 				setAddress(cont + 1);

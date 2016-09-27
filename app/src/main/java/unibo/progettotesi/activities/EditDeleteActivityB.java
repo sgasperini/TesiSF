@@ -42,7 +42,7 @@ public class EditDeleteActivityB extends AppCompatActivity {
 
 		setTitle("Seleziona Profilo");
 
-		findViewById(R.id.linearLayoutTimeOptions).setVisibility(View.GONE);
+		findViewById(R.id.linearLayoutTravelOptions).setVisibility(View.GONE);
 
 		edit = getIntent().getBooleanExtra("Edit", false);
 		/*if(edit)

@@ -10,20 +10,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="unibo.progettotesi.activities.NewTripActivityB">
 
-    <ImageButton
-        style="?android:attr/borderlessButtonStyle"
-        android:layout_width="match_parent"
-        android:layout_height="120dp"
-        android:id="@+id/imageButton4"
-        android:text="Indirizzo"
-        android:src="@drawable/ic_directions_black_48dp"
-        android:onClick="addressClick"
-        android:background="#00897b"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:visibility="gone"/>
-
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -31,45 +17,70 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_above="@+id/linearLayoutTimeOptions"
-        />
+        android:layout_above="@+id/linearLayoutTravelOptions"/>
 
     <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="visible"
+        android:layout_height="100dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:id="@+id/linearLayoutTimeOptions"
-        android:layout_marginTop="5dp">
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:id="@+id/linearLayoutTravelOptions">
 
-        <Button
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Partenza alle"
-            android:id="@+id/buttonPlanningTime"
+        <ImageButton
             style="?android:attr/borderlessButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:id="@+id/imageButton4"
+            android:text="Indirizzo"
+            android:src="@drawable/ic_directions_black_48dp"
             android:background="#00897b"
-            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:visibility="visible"
+            android:onClick="startSingleTrip"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:visibility="visible"
+            android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:layout_weight="1"
-            android:textColor="#000000"
-            android:onClick="changeTimeOption"/>
+            android:id="@+id/linearLayoutTimeOptions"
+            android:orientation="vertical">
 
-        <Button
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="15 : 30"
-            android:id="@+id/buttonTimePicker"
-            style="?android:attr/borderlessButtonStyle"
-            android:background="#26a69a"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_weight="1"
-            android:textColor="#000000"
-            android:onClick="openTimePicker"/>
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:text="Partenza alle"
+                android:id="@+id/buttonPlanningTime"
+                style="?android:attr/borderlessButtonStyle"
+                android:background="#26a69a"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_weight="1"
+                android:textColor="#000000"
+                android:onClick="changeTimeOption"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:text="15 : 30"
+                android:id="@+id/buttonTimePicker"
+                style="?android:attr/borderlessButtonStyle"
+                android:background="#80cbc4"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_weight="1"
+                android:textColor="#000000"
+                android:onClick="openTimePicker"/>
+        </LinearLayout>
     </LinearLayout>
+
 </RelativeLayout>

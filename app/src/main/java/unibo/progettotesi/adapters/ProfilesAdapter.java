@@ -94,12 +94,12 @@ public class ProfilesAdapter extends ArrayAdapter<Profile> {
 		relativeLayout.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if(voiceSupport)
-					if(!VoiceSupport.isTalkBackEnabled(getContext()))
-						tts.speak("Selezionato " + profile.getName(), TextToSpeech.QUEUE_FLUSH, null);
 				if(newTripActivityB != null)
 					NewTripActivityB.selectProfile(newTripActivityB, profile);
 				else {
+					if(voiceSupport)
+						if(!VoiceSupport.isTalkBackEnabled(getContext()))
+							tts.speak("Selezionato " + profile.getName(), TextToSpeech.QUEUE_FLUSH, null);
 					EditDeleteActivityB.selectProfile(editDeleteActivityB, profile, pos);
 				}
 

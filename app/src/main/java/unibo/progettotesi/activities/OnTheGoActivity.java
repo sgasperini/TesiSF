@@ -292,23 +292,27 @@ public class OnTheGoActivity extends AppCompatActivity implements HelloBus, Walk
 	}
 
 	private void getETA() {
-		RealTimeTracker.getBusETA(this, currentLeg.getStartStop().getCode() + "", currentLeg.getLine().getName());
+		if(stopsToGo != null)
+			RealTimeTracker.getBusETA(this, currentLeg.getEndStop().getCode() + "", currentLeg.getLine().getName());
 	}
 
 	@Override
 	public void setETA(Time time, String bus) {
 		if (bus.equals(actualBus)) {
 			if (stopsToGo != null) {
-				minRemaining.setText("Minuti a scendere:\n" + "da satellite " + Time.getDifference(Time.now(), time) + "\nda orario " + Time.getDifference(Time.now(), stopsToGo.get(stopsToGo.size() - 1).getDepartureTime()));
-				minTotalRemaining.setText("Minuti a destinazione:\nda satellite non più di " + (Time.getDifference(Time.now(), route.getEndTime()) + Time.getDifference(stopsToGo.get(stopsToGo.size() - 1).getDepartureTime(), time)) + "\nda orario " + Time.getDifference(Time.now(), route.getEndTime()));
+				minRemaining.setText("Minuti a scendere:\n" + "da satellite " + Time.getDifference(Time.now(), time) +
+						"\nda orario " + Time.getDifference(Time.now(), currentLeg.getEndTime()));
+				minTotalRemaining.setText("Minuti a destinazione:\nda satellite non più di " + (1 + Time.getDifference(Time.now(), route.getEndTime())
+						+ Time.getDifference(currentLeg.getEndTime(), time)) +
+						"\nda orario " + Time.getDifference(Time.now(), route.getEndTime()));
 			}
 		} else
 			failure();
 	}
 
 	public void failure() {
-		if (stopsToGo != null)
-			minRemaining.setText("Minuti a scendere:\nda orario " + Time.getDifference(Time.now(), stopsToGo.get(stopsToGo.size() - 1).getDepartureTime()));
+		//if (stopsToGo != null)
+			minRemaining.setText("Minuti a scendere:\nda orario " + Time.getDifference(Time.now(), currentLeg.getEndTime()));
 		minTotalRemaining.setText("Minuti a destinazione:\nda orario " + Time.getDifference(Time.now(), route.getEndTime()));
 	}
 
@@ -357,12 +361,12 @@ public class OnTheGoActivity extends AppCompatActivity implements HelloBus, Walk
 					AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 					if(voiceSupport)
 						if(!VoiceSupport.isTalkBackEnabled(this)){
-							tts.speak("Scendere alla prossima fermata, conferma per fermare avvisi", TextToSpeech.QUEUE_FLUSH, null);
+							tts.speak("Richiedere la fermata e scendere alla prossima, conferma per fermare avvisi", TextToSpeech.QUEUE_FLUSH, null);
 						}
 					alertDialogBuilder
 							.setTitle("Discesa")
 							.setIcon(R.mipmap.ic_launcher)
-							.setMessage("Scendere alla prossima fermata, conferma per fermare avvisi")
+							.setMessage("Richiedere la fermata e scendere alla prossima, conferma per fermare avvisi")
 							.setCancelable(false)
 							.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 								@Override

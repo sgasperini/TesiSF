@@ -140,6 +140,11 @@ public class DestinationActivityB extends AppCompatActivity implements Walking{
 			});
 	}
 
+	public void stopSupport(View v){
+		MainActivity.finishHandler.sendEmptyMessage(0);
+		finish();
+	}
+
 	@Override
 	public void setDistance(double length) {
 		if(failedDistance) {

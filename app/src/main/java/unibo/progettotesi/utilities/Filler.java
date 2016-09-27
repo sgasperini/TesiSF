@@ -26,7 +26,7 @@ public class Filler {
 		view.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				SelectRouteActivityB.selectRoute(activity, route);
+				SelectRouteActivityB.selectRoute((SelectRouteActivityB) activity, route);
 			}
 		});
 

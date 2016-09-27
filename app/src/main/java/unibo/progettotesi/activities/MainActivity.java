@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 	public static Handler endActivityHandlerOnTheGo;
 	private boolean calledByOnTheGo;
 	private PendingIntent pendingIntentActivityUpdates;
+	public static Handler finishHandler;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -135,6 +136,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 			}
 		};
 
+		finishHandler = new Handler() {
+			public void handleMessage(Message msg) {
+				super.handleMessage(msg);
+				finish();
+			}
+		};
 
 		/*notificationHandler = new Handler() {
 			public void handleMessage(Message msg) {
@@ -258,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 			Log.wtf("ACTIVITY RECOGNITION", "connesso");
 			Intent intent = new Intent(this, ActivityRecognitionService.class);
 			pendingIntentActivityUpdates = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-			ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(apiClient, 3000, pendingIntentActivityUpdates);
+			ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(apiClient, 1000, pendingIntentActivityUpdates);
 			if (calledByBusWaiting)
 				ActivityRecognitionService.activityHandlerBusWaiting.sendEmptyMessage(0);
 			if (calledByOnTheGo)

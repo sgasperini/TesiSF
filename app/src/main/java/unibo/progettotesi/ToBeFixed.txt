@@ -7,16 +7,21 @@ Da sistemare:
 - progress bar delle conversioni coodrinate e indirizzo (c'è poco da fare)
 - sei un bus in ritardo, minuti a scendere da orario può negativo (forse risolto)
 
-- dialogo che dica ok per fermare la vibrazione pre discesa - TESTARE
+- dialogo che dica ok per fermare la vibrazione pre discesa - pare ok
 
 da fare prossima volta
-- se si preme indietro mentre si naviga deve chiedere se terminare o no - TESTARE
-- back stack per il bus
+- se si preme indietro mentre si naviga deve chiedere se terminare o no - fatto
+- back stack per il bus - fatto
+- ordinare percorsi proposti - fatto
+- percorso singolo immediato - fatto
+- notifica quando manca 1 fermata con tasto ok per fermare la vibrazione
+- sistemare orario preso dal timepicker - fatto
+- valutare di levare le notifiche dell'activity recognition e agire direttamente
+- controllare attentamente gli orari di arrivo alla fermata e a destinazione - risolto lo strano problema, ma si possono usare anche le departureTime
 
 
 problemi esterni
 - ogni tanto si va in socket timeout non si sa perché forse problemi di internet - pare vero
-- le distanze stradali, i trentini le hanno tolte
 
 
 problemi strani:
@@ -31,7 +36,7 @@ impostazioni:
 
 possibili aggiunte:
 - detect telefono sul bus/a piedi per evitare la pressione dei tasti "sali" e "scendi" - TESTARE
-- notifica fissa tipo Google Maps quando sei in bus waiting o OTG che dica un paio di info
+- notifica fissa tipo Google Maps quando sei in bus waiting o OTG che dia un paio di info
 - uso profili bilato
 - ordinare profili in base al più probabile o anche a quelli che partono più vicini - fatto coi vicini
 - comandi vocali

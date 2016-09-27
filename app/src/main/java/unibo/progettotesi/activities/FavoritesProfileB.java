@@ -25,6 +25,7 @@ public class FavoritesProfileB extends AppCompatActivity {
 	private boolean departure;
 	private TextToSpeech tts;
 	private boolean voiceSupport;
+	private boolean singleTrip;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +39,7 @@ public class FavoritesProfileB extends AppCompatActivity {
 		if(editProfileN != -1) {
 			departure = getIntent().getBooleanExtra("departure", false);
 		}
+		singleTrip = getIntent().getBooleanExtra("singleTrip", false);
 
 		List<Place> placeList = getFavorites();
 
@@ -86,26 +88,32 @@ public class FavoritesProfileB extends AppCompatActivity {
 
 			editor.commit();
 
-			if (start) {
-				Intent intent = new Intent(favoritesProfileB, NewProfileActivityB.class);
-				intent.putExtra("Start", !start);
-				favoritesProfileB.startActivity(intent);
-				if(favoritesProfileB.voiceSupport)
-					favoritesProfileB.tts.speak("Destinazione, selezionare metodo immissione", TextToSpeech.QUEUE_FLUSH, null);
+			if(!favoritesProfileB.singleTrip) {
+				if (start) {
+					Intent intent = new Intent(favoritesProfileB, NewProfileActivityB.class);
+					intent.putExtra("Start", !start);
+					favoritesProfileB.startActivity(intent);
+					if (favoritesProfileB.voiceSupport)
+						favoritesProfileB.tts.speak("Destinazione, selezionare metodo immissione", TextToSpeech.QUEUE_FLUSH, null);
+					favoritesProfileB.finish();
+				} else {
+					Intent intent = new Intent(favoritesProfileB, InputFormB.class);
+					intent.putExtra("Start", start);
+					intent.putExtra("Name", true);
+					intent.putExtra("Favorite", false);
+					if (favoritesProfileB.voiceSupport)
+						if (!VoiceSupport.isTalkBackEnabled(favoritesProfileB)) {
+							favoritesProfileB.tts.speak("Immettere nome profilo", TextToSpeech.QUEUE_FLUSH, null);
+						}
+					favoritesProfileB.startActivity(intent);
+					favoritesProfileB.finish();
+				}
+			}else{	//trip singolo
+				NewProfileActivityB.saveSingleTripProfile(favoritesProfileB);
 				favoritesProfileB.finish();
-			} else {
-				Intent intent = new Intent(favoritesProfileB, InputFormB.class);
-				intent.putExtra("Start", start);
-				intent.putExtra("Name", true);
-				intent.putExtra("Favorite", false);
-				if(favoritesProfileB.voiceSupport)
-					if(!VoiceSupport.isTalkBackEnabled(favoritesProfileB)) {
-						favoritesProfileB.tts.speak("Immettere nome profilo", TextToSpeech.QUEUE_FLUSH, null);
-					}
-				favoritesProfileB.startActivity(intent);
-				favoritesProfileB.finish();
+				NewProfileActivityB.finishHandlerEnd.sendEmptyMessage(0);
 			}
-		}else{
+		}else{	//modifica
 			Profile profile = Profile.getProfileFromString(preferences.getString("ProfileN_" + favoritesProfileB.editProfileN, ""));
 			if(favoritesProfileB.departure)
 				profile.setStart(favoritePlace);
