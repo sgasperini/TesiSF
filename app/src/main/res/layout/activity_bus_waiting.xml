@@ -29,7 +29,8 @@
         android:background="#00897b"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:scaleType="fitCenter"/>
+        android:scaleType="fitCenter"
+        android:contentDescription="Sali"/>
 
     <ScrollView
         android:layout_width="match_parent"

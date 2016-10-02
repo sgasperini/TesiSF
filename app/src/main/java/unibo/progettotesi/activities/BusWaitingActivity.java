@@ -197,13 +197,13 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 
 	@Override
 	public void setETA(Time time, String bus) {
-		int difference = Time.getDifference(route.getLegs().get(0).getStartTime(), time);
+		int difference = Time.getDifferenceAlsoNegative(route.getLegs().get(0).getStartTime(), time);
 		if(difference > -5 && difference < 45){
 			((TextView) findViewById(R.id.firstLeg).findViewById(R.id.busStartRealTime_leg)).setText(
 					"Bus previsto alle: " + route.getLegs().get(0).getStartTime() + "\nstimato da satellite in " + (difference == 0 ? "orario" :
 							(difference > 0 ? "ritardo" : "anticipo") + " di " + Math.abs(difference) + " minuti (" + time + ")"));
 			this.bus = bus;
-			if((difference = Math.abs(Time.getDifference(time, Time.now()))) == 0) {
+			if((difference = Math.abs(Time.getDifferenceAlsoNegative(time, Time.now()))) == 0) {
 				if (voiceSupport)
 					if (!VoiceSupport.isTalkBackEnabled(this)) {
 						tts.speak("Autobus in arrivo a breve, prepararsi", TextToSpeech.QUEUE_FLUSH, null);
@@ -222,7 +222,7 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 		((TextView) findViewById(R.id.firstLeg).findViewById(R.id.busStartRealTime_leg)).setText(
 				"Bus previsto alle: " + route.getLegs().get(0).getStartTime());
 		int difference;
-		if((difference = Time.getDifference(Time.now(), route.getLegs().get(0).getStartTime())) == 0) {
+		if((difference = Time.getDifferenceAlsoNegative(Time.now(), route.getLegs().get(0).getStartTime())) == 0) {
 			if (voiceSupport)
 				if (!VoiceSupport.isTalkBackEnabled(this)) {
 					tts.speak("Autobus in arrivo a breve da orario, prepararsi", TextToSpeech.QUEUE_FLUSH, null);

@@ -299,12 +299,23 @@ public class OnTheGoActivity extends AppCompatActivity implements HelloBus, Walk
 	@Override
 	public void setETA(Time time, String bus) {
 		if (bus.equals(actualBus)) {
+			int minOR = Time.getDifferenceAlsoNegative(Time.now(), currentLeg.getEndTime());
+			int minOTR = Time.getDifferenceAlsoNegative(Time.now(), route.getEndTime());
 			if (stopsToGo != null) {
-				minRemaining.setText("Minuti a scendere:\n" + "da satellite " + Time.getDifference(Time.now(), time) +
-						"\nda orario " + Time.getDifference(Time.now(), currentLeg.getEndTime()));
-				minTotalRemaining.setText("Minuti a destinazione:\nda satellite non più di " + (1 + Time.getDifference(Time.now(), route.getEndTime())
-						+ Time.getDifference(currentLeg.getEndTime(), time)) +
-						"\nda orario " + Time.getDifference(Time.now(), route.getEndTime()));
+				if(minOR >= 0)
+					minRemaining.setText("Minuti a scendere:\n" + "da satellite " + Time.getDifferenceAlsoNegative(Time.now(), time) +
+						"\nda orario " + minOR);
+				else
+					minRemaining.setText("Minuti a scendere:\n" + "da satellite " + Time.getDifferenceAlsoNegative(Time.now(), time) +
+							"\nDa orario:\nautobus arrivato\n(" + (-minOR) + " minuti fa)");
+				if(minOTR >= 0)
+					minTotalRemaining.setText("Minuti a destinazione:\nda satellite non più di " + (1 + Time.getDifferenceAlsoNegative(Time.now(), route.getEndTime())
+							+ Time.getDifferenceAlsoNegative(currentLeg.getEndTime(), time)) +
+							"\nda orario " + minOTR);
+				else
+					minTotalRemaining.setText("Minuti a destinazione:\nda satellite non più di " + (1 + Time.getDifferenceAlsoNegative(Time.now(), route.getEndTime())
+						+ Time.getDifferenceAlsoNegative(currentLeg.getEndTime(), time)) +
+						"\nDa orario:\npercorso terminato\n(" + (-minOTR) + " minuti fa)");
 			}
 		} else
 			failure();
@@ -312,8 +323,16 @@ public class OnTheGoActivity extends AppCompatActivity implements HelloBus, Walk
 
 	public void failure() {
 		//if (stopsToGo != null)
-			minRemaining.setText("Minuti a scendere:\nda orario " + Time.getDifference(Time.now(), currentLeg.getEndTime()));
-		minTotalRemaining.setText("Minuti a destinazione:\nda orario " + Time.getDifference(Time.now(), route.getEndTime()));
+		int minR = Time.getDifferenceAlsoNegative(Time.now(), currentLeg.getEndTime());
+		int minTR = Time.getDifferenceAlsoNegative(Time.now(), route.getEndTime());
+		if(minR >= 0)
+			minRemaining.setText("Minuti a scendere:\nda orario " + minR);
+		else
+			minRemaining.setText("Da orario:\nautobus arrivato\n(" + (-minR) + " minuti fa)");
+		if(minTR >= 0)
+			minTotalRemaining.setText("Minuti a destinazione:\nda orario " + minTR);
+		else
+			minTotalRemaining.setText("Da orario:\npercorso terminato\n(" + (-minTR) + " minuti fa)");
 	}
 
 	public void setNewLeg(Leg currentLeg) {
@@ -547,7 +566,6 @@ public class OnTheGoActivity extends AppCompatActivity implements HelloBus, Walk
 		if(locationListener != null)
 			locationListener = null;
 		editor.putString("LastStop", "");
-		editor.putString("CurrentRoute", "");
 		editor.commit();
 
 		if(tts !=null){

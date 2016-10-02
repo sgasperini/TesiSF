@@ -74,6 +74,10 @@ public class Time {
 		return (minute < 10 ? "0" : "") + minute;
 	}
 
+	public static int getDifferenceAlsoNegative(Time startTime, Time endTime) {
+		return endTime.minute - startTime.minute + 60 * (endTime.hour - startTime.hour);
+	}
+
 	public static int getDifference(Time startTime, Time endTime) {
 		return endTime.minute - startTime.minute + 60 * (endTime.hour - startTime.hour) + (endTime.hour < startTime.hour ? 24 * 60 : 0);
 	}

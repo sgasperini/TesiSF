@@ -40,7 +40,8 @@
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:visibility="visible"
-            android:onClick="startSingleTrip"/>
+            android:onClick="startSingleTrip"
+            android:contentDescription="Viaggio singolo"/>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -65,7 +66,8 @@
                 android:layout_alignParentStart="true"
                 android:layout_weight="1"
                 android:textColor="#000000"
-                android:onClick="changeTimeOption"/>
+                android:onClick="changeTimeOption"
+                android:contentDescription="Cambia tra partenza alle e arrivo @string/wallet_buy_button_place_holder"/>
 
             <Button
                 android:layout_width="match_parent"
@@ -79,7 +81,8 @@
                 android:layout_alignParentEnd="true"
                 android:layout_weight="1"
                 android:textColor="#000000"
-                android:onClick="openTimePicker"/>
+                android:onClick="openTimePicker"
+                android:contentDescription="Modifica orario"/>
         </LinearLayout>
     </LinearLayout>
 

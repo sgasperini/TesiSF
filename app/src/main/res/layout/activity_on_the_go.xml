@@ -123,6 +123,7 @@
         android:background="#00897b"
         android:scaleType="fitCenter"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"/>
+        android:layout_centerHorizontal="true"
+        android:contentDescription="Scendi"/>
 
 </RelativeLayout>

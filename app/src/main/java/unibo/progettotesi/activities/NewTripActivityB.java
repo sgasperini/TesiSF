@@ -148,7 +148,7 @@ public class NewTripActivityB extends AppCompatActivity {
 			public void onTick(long millisUntilFinished) {
 				Calendar c = Calendar.getInstance();
 
-				timePickerButton.setText(c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE));
+				timePickerButton.setText(new Time(c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE)).toString());
 			}
 			public void onFinish() {
 

@@ -10,14 +10,9 @@ Da sistemare:
 - dialogo che dica ok per fermare la vibrazione pre discesa - pare ok
 
 da fare prossima volta
-- se si preme indietro mentre si naviga deve chiedere se terminare o no - fatto
-- back stack per il bus - fatto
-- ordinare percorsi proposti - fatto
-- percorso singolo immediato - fatto
 - notifica quando manca 1 fermata con tasto ok per fermare la vibrazione
-- sistemare orario preso dal timepicker - fatto
-- valutare di levare le notifiche dell'activity recognition e agire direttamente
-- controllare attentamente gli orari di arrivo alla fermata e a destinazione - risolto lo strano problema, ma si possono usare anche le departureTime
+- valutare di levare le notifiche dell'activity recognition e agire direttamente, specie in discesa
+- usare departure time per stimare il ritardo
 
 
 problemi esterni
