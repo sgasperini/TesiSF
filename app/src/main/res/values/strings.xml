@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ProgettoTesi</string>
+    <string name="app_name">GoGoBus</string>
     <string name="title_activity_new_profile">NewProfileActivity</string>
     <string name="title_activity_settings">Settings</string>
 
