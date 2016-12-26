@@ -28,6 +28,8 @@ public class EditNameProfile extends AppCompatActivity {
 	private TextToSpeech tts;
 	private boolean voiceSupport;
 
+
+	//analogous to inputForm
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:id="@+id/imageButton6"
-        android:src="@drawable/ic_directions_bus_black_48dp"
+        android:src="@drawable/ic_call_made_black_48dp"
         android:onClick="getOn"
         android:background="#00897b"
         android:layout_alignParentBottom="true"

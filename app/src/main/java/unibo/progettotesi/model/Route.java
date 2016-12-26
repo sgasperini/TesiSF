@@ -26,7 +26,7 @@ public class Route {
 		this.endTime = endTime;
 		this.startStop = startStop;
 		this.endStop = endStop;
-		legs = new ArrayList<Leg>();
+		legs = new ArrayList<>();
 	}
 
 	public Route(Place startPlace, Place endPlace, Time startTime, Time endTime, Stop startStop, Stop endStop, int minWalking) {
@@ -37,7 +37,7 @@ public class Route {
 		this.startStop = startStop;
 		this.endStop = endStop;
 		this.minWalking = minWalking;
-		legs = new ArrayList<Leg>();
+		legs = new ArrayList<>();
 	}
 
 	public Route(List<Leg> legs, Place startPlace, Place endPlace, Time startTime, Time endTime, Stop startStop, Stop endStop, int minWalking) {
@@ -144,7 +144,10 @@ public class Route {
 
 	public static Route getRouteFromString(String saved){
 		StringTokenizer stringTokenizer = new StringTokenizer(saved, "†");
-		Route r = new Route(Place.getPlaceFromString(stringTokenizer.nextToken()), Place.getPlaceFromString(stringTokenizer.nextToken()), Time.getTimeFromString(stringTokenizer.nextToken()), Time.getTimeFromString(stringTokenizer.nextToken()), Stop.getStopFromString(stringTokenizer.nextToken()), Stop.getStopFromString(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken().toString()));
+		Route r = new Route(Place.getPlaceFromString(stringTokenizer.nextToken()),
+				Place.getPlaceFromString(stringTokenizer.nextToken()), Time.getTimeFromString(stringTokenizer.nextToken()),
+				Time.getTimeFromString(stringTokenizer.nextToken()), Stop.getStopFromString(stringTokenizer.nextToken()),
+				Stop.getStopFromString(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken().toString()));
 		if(stringTokenizer.hasMoreTokens())
 			r.setLegs(getLegsFromString(stringTokenizer.nextToken("«")));
 		return r;
@@ -173,7 +176,7 @@ public class Route {
 			Place startPlace = new Place(start.getAddress(), start);
 			Place endPlace = new Place(end.getAddress(), end);
 
-			List<Leg> legs = new ArrayList<Leg>();
+			List<Leg> legs = new ArrayList<>();
 			int minWalking = 0;
 
 			for (int i = 0; i < response.getLeg().size(); i++) {

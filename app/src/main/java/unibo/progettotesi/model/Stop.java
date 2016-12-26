@@ -130,7 +130,9 @@ public class Stop {
 
 	public static Stop getStopFromString(String saved){
 		StringTokenizer stringTokenizer = new StringTokenizer(saved, "®");
-		return new Stop(Location.getLocationFromString(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken()), stringTokenizer.nextToken(), stringTokenizer.nextToken());
+		return new Stop(Location.getLocationFromString(stringTokenizer.nextToken()),
+				Integer.parseInt(stringTokenizer.nextToken()), stringTokenizer.nextToken(),
+				stringTokenizer.nextToken());
 	}
 
 	public String savingStringEmergency() {

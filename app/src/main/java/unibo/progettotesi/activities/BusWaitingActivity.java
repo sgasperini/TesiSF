@@ -57,14 +57,11 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 	protected void onStart() {
 		super.onStart();
 
+		//usual location and permission request
 		lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			if (ActivityCompat.shouldShowRequestPermissionRationale(this,
 					Manifest.permission.ACCESS_FINE_LOCATION)) {
-
-				// Show an expanation to the user *asynchronously* -- don't block
-				// this thread waiting for the user's response! After the user
-				// sees the explanation, try again to request the permission.
 
 			} else {
 				ActivityCompat.requestPermissions(this,
@@ -72,6 +69,7 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 						Constants.PERMISSION_LOCATION_REQUEST);
 			}
 		}else{
+			//if unsuccessful it hides the textview and stores the failure
 			failureDistance();
 			if (!updates) {
 				lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locationListener);
@@ -85,6 +83,7 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 	@Override
 	public void onRequestPermissionsResult(int requestCode,
 										   String permissions[], int[] grantResults) {
+		//acutal locaton update request, every 2s
 		switch (requestCode) {
 			case Constants.PERMISSION_LOCATION_REQUEST: {
 				// If request is cancelled, the result arrays are empty.
@@ -107,9 +106,6 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 				}
 				return;
 			}
-
-			// other 'case' lines to check for other
-			// permissions this app might request
 		}
 	}
 
@@ -127,6 +123,7 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 
 		route = Route.getRouteFromString(sharedPreferences.getString("CurrentRoute", ""));
 
+		//we use our utility filler to fill the view with information about the route
 		Filler.fillRoute(findViewById(R.id.routeLayout), route, this);
 		findViewById(R.id.routeLayout).setClickable(false);
 
@@ -138,6 +135,7 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 			}
 		}
 
+		//fills the first leg of the route, and if needed leg#2 and leg#3
 		Filler.fillLeg(findViewById(R.id.firstLeg), route.getLegs().get(0));
 		int nLegs = route.getLegs().size();
 		if(nLegs < 3){
@@ -151,10 +149,12 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 			Filler.fillLeg(findViewById(R.id.thirdLeg), route.getLegs().get(2));
 		}
 
+		//gets the eta, that is then handled by setEta
 		getETA();
 
-		timer = new CountDownTimer(500000000, 60000) {
+		timer = new CountDownTimer(500000000, 30000) {
 
+			//repeated every 30s
 			public void onTick(long millisUntilFinished) {
 				getETA();
 			}
@@ -180,8 +180,11 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 				}
 			});
 
+		//handler to start activity recognition
 		MainActivity.startActivityHandlerBusWaiting.sendEmptyMessage(0);
 
+
+		//handles activity recognized
 		notificationHandler = new Handler() {
 			public void handleMessage(Message msg) {
 				super.handleMessage(msg);
@@ -197,6 +200,7 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 
 	@Override
 	public void setETA(Time time, String bus) {
+		//sets the eta of the bus using real time data and official times
 		int difference = Time.getDifferenceAlsoNegative(route.getLegs().get(0).getStartTime(), time);
 		if(difference > -5 && difference < 45){
 			((TextView) findViewById(R.id.firstLeg).findViewById(R.id.busStartRealTime_leg)).setText(
@@ -219,6 +223,7 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 	}
 
 	public void failure(){
+		//sets eta using official time, when real time data is not available
 		((TextView) findViewById(R.id.firstLeg).findViewById(R.id.busStartRealTime_leg)).setText(
 				"Bus previsto alle: " + route.getLegs().get(0).getStartTime());
 		int difference;
@@ -241,6 +246,7 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 	}
 
 	public void getOn(View view) {
+		//starts otg when button pressed and confirmed
 		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 		if(voiceSupport)
 			if(!VoiceSupport.isTalkBackEnabled(this)){
@@ -271,6 +277,7 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 	}
 
 	public void getActuallyOn(){
+		//starts onthego, from activity recognition or button pressed
 		Intent intent = new Intent(this, OnTheGoActivity.class);
 		intent.putExtra("NLeg", nLeg);
 		if(bus != null)
@@ -321,6 +328,7 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 			tts.shutdown();
 		}
 
+		//stop acivity recognition
 		MainActivity.endActivityHandlerBusWaiting.sendEmptyMessage(0);
 
 		super.onDestroy();
@@ -359,6 +367,7 @@ public class BusWaitingActivity extends AppCompatActivity implements HelloBus, W
 
 		@Override
 		public void onLocationChanged(Location location) {
+			//calculates distance from stop on location changes
 			RealTimeTracker.calculateWalkingDistance(busWaitingActivity, location, route.getLegs().get(0).getStartStop().getLocation());
 		}
 

@@ -59,6 +59,8 @@ public class NewProfileActivityB extends AppCompatActivity {
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		editor = sharedPreferences.edit();
 
+		//retrieve the booleans that tell where you are in the creation process, if you used gps or not
+		//if you are editing, if it0s a single trip etc
 		start = getIntent().getBooleanExtra("Start", false);
 		gpsStart = getIntent().getBooleanExtra("GPS", false);
 		editProfileN = getIntent().getIntExtra("editProfileN", -1);
@@ -68,7 +70,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 			editingProfile = Profile.getProfileFromString(sharedPreferences.getString("ProfileN_" + editProfileN, ""));
 		}
 
-		//se è stato usato per la partenza il gps levalo
+		//take away gps if it was already used
 		if(gpsStart)
 			findViewById(R.id.gps).setVisibility(View.GONE);
 
@@ -86,6 +88,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 
 		voiceSupport = sharedPreferences.getBoolean("VoiceSupport", true);
 
+		//start voice support if wanted
 		if(voiceSupport)
 			tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
 				@Override
@@ -96,6 +99,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 				}
 			});
 
+		//all these handle tha activities stack
 		if(start)
 			finishHandlerStart = new Handler() {
 
@@ -117,6 +121,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 
 			};
 
+		//if single trip, gps is already used as starting point, not an option for destination
 		if(singleTrip)
 			gpsClick(null);
 
@@ -130,8 +135,8 @@ public class NewProfileActivityB extends AppCompatActivity {
 			}*/
 	}
 
+	//gps
 	public void gpsClick(View v){
-		// verificare sia attivo (accenderlo), prendere la posizione e mostrarla come indirizzo chiedendo se si vuol salvare come preferito, comunque sia chiedere la distanza a piedi, poi chiamare la nuova activity
 		if(!VoiceSupport.isTalkBackEnabled(this))
 			Toast.makeText(NewProfileActivityB.this, "GPS, attendere", Toast.LENGTH_SHORT).show();
 		if(voiceSupport)
@@ -145,14 +150,13 @@ public class NewProfileActivityB extends AppCompatActivity {
 		findViewById(R.id.preferiti).setClickable(false);
 		findViewById(R.id.indirizzo).setClickable(false);
 
+		//find location and transforms it into address
 		locationToolbox = new LocationToolbox(this);
 		latitude = locationToolbox.getLatitude();
-		Log.wtf("LOCATION", "presa dentro gps click");
 		longitude = locationToolbox.getLongitude();
 		coordinatesToAddress();
 
-		//RealTimeTracker.calculateDistances(null, locationToolbox.getLocation(), new Location(44.475409, 11.395950, ""), new Location(44.481295, 11.380806, ""));
-
+		//create departure place for the profile
 		location = new Location(latitude, longitude, address);
 		place = new Place(location);
 
@@ -179,8 +183,11 @@ public class NewProfileActivityB extends AppCompatActivity {
 		}
 	}
 
+	//favorite
 	public void favoritesClick(View v){
+		//launches favoritesProfile to pick a favorite place to insert in the new profile
 		Intent intent = new Intent(this, FavoritesProfileB.class);
+		//information about where you are in the creation process, what kind of process it is are sent
 		intent.putExtra("Start", start);
 		intent.putExtra("departure", departure);
 		intent.putExtra("editProfileN", editProfileN);
@@ -195,8 +202,10 @@ public class NewProfileActivityB extends AppCompatActivity {
 		//finish();
 	}
 
+	//address
 	public void addressClick(View v){
 		Intent intent;
+		//if creating, not editing, launches the input form to insert the address wanted
 		if(editProfileN == -1){
 			intent = new Intent(this, InputFormB.class);
 			intent.putExtra("Start", start);
@@ -218,12 +227,13 @@ public class NewProfileActivityB extends AppCompatActivity {
 		//finish();
 	}
 
-	private void confirmAddress(){	//GPS
+	private void confirmAddress(){
 		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 		if(voiceSupport)
 			if(!VoiceSupport.isTalkBackEnabled(this)){
 				tts.speak("Trovato: " + address + " corretto?", TextToSpeech.QUEUE_FLUSH, null);
 			}
+		//ask if the address found with the gps is correct
 		alertDialogBuilder
 				.setTitle("Conferma")
 				.setIcon(R.mipmap.ic_launcher)
@@ -232,6 +242,8 @@ public class NewProfileActivityB extends AppCompatActivity {
 				.setPositiveButton("Sì", new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
+						//if it's a creation process ask if the user wants to save the address
+						// in the favorites and saves the place in the profile
 						if(editProfileN == -1) {
 							saveLocation();
 							if(!singleTrip)
@@ -239,6 +251,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 							dialog.cancel();
 							locationToolbox.stopUsingGPS();
 						}else{
+							//if editing it changes the part of the profile to modify
 							if(departure)
 								editingProfile.setStart(place);
 							else
@@ -281,6 +294,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 		alertDialog.show();
 	}
 
+	//ask if the user wants to save the place in the favorites
 	private void askFavorite(){
 		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 		if(voiceSupport)
@@ -296,6 +310,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						dialog.cancel();
+						//inputForm saves the place, it needs a boolean to tell which of its tasks it has to do
 						startInputName(true);
 					}
 				})
@@ -314,6 +329,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 
 	private void continueProfileCreation() {
 		if(start){
+			//if it just did the departure part, it relaunches itself with the appropriate booleans
 			Intent intent = new Intent(getApplicationContext(), NewProfileActivityB.class);
 			intent.putExtra("Start", !start);
 			intent.putExtra("GPS", true);
@@ -322,11 +338,13 @@ public class NewProfileActivityB extends AppCompatActivity {
 			startActivity(intent);
 			//finish();
 		}else{
+			//else it starts input to ask the name of the profile and save it
 			startInputName(false);
 		}
 	}
 
 	private void startInputName(boolean forFavorite) {
+		//it launches inputform specifying if it's for a profile or a favorite
 		Intent intent = new Intent(this, InputFormB.class);
 		intent.putExtra("Start", start);
 		intent.putExtra("Name", true);
@@ -381,6 +399,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 
 		editor.commit();
 
+		//only when the profile is saved, all the previous activities are killed to free the stack
 		ProfileManagingActivityB.finishHandler.sendEmptyMessage(0);
 		try{
 			NewProfileActivityB.finishHandlerEnd.sendEmptyMessage(0);
@@ -413,6 +432,7 @@ public class NewProfileActivityB extends AppCompatActivity {
 
 		context.startActivity(intent);
 
+		//same as method above, analogous for the single trip
 		try{
 			NewProfileActivityB.finishHandlerStart.sendEmptyMessage(0);
 		}catch(Exception e){

@@ -50,8 +50,9 @@ public class SelectRouteActivityB extends AppCompatActivity {
 
 		profile = Profile.getProfileFromString(sharedPreferences.getString("CurrentProfile", ""));
 
+		//RouteFinder calls the service that provides the routes
 		routeFinder = new RouteFinder(profile.getStart(), profile.getEnd(), time, departureTime);
-		/*routeList = */routeFinder.calculateRoutes(this);
+		routeFinder.calculateRoutes(this);
 
 		voiceSupport = sharedPreferences.getBoolean("VoiceSupport", true);
 
@@ -65,6 +66,7 @@ public class SelectRouteActivityB extends AppCompatActivity {
 				}
 			});
 
+		//back stack
 		finishHandler = new Handler() {
 
 			public void handleMessage(Message msg) {
@@ -76,6 +78,7 @@ public class SelectRouteActivityB extends AppCompatActivity {
 		};
 	}
 
+	//usual static method called from thr adapter when the item is selected, it launches bus waiting with the appropriate information
 	public static void selectRoute(SelectRouteActivityB activity, Route route) {
 		//start next
 
@@ -92,8 +95,6 @@ public class SelectRouteActivityB extends AppCompatActivity {
 
 		Intent intent = new Intent(activity, BusWaitingActivity.class);
 		activity.startActivity(intent);
-
-		//activity.finish();
 	}
 
 	@Override
@@ -110,10 +111,10 @@ public class SelectRouteActivityB extends AppCompatActivity {
 		super.onDestroy();
 	}
 
+	//public method to display the routes
 	public void setRouteList(List<Route> routeList){
 		this.routeList = routeList;
 		findViewById(R.id.progressBar_selectRoute).setVisibility(View.GONE);
-		//Filler.fillRoute(findViewById(R.id.favoriteStops), routeList.get(0), this);
 
 		RoutesAdapter routesAdapter = new RoutesAdapter(this, R.layout.route_list_b, routeList/*.subList(1, routeList.size())*/);
 		((ListView) findViewById(R.id.listView3)).setAdapter(routesAdapter);

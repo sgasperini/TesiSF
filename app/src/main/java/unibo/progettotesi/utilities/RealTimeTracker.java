@@ -51,6 +51,7 @@ public class RealTimeTracker {
 	}
 
 	public static void getBusETA(final HelloBus activity, String code, final String line) {
+		//makes the call to hello bus to get the bus eta, with HelloBus interface, can be buswaiting or
 		Retrofit retrofit = new Retrofit.Builder()      //create the retrofit builder
 				.baseUrl(Constants.ETA_BASE_URL)
 				.addConverterFactory(GsonConverterFactory.create())	//parse Gson string
@@ -77,10 +78,11 @@ public class RealTimeTracker {
 			public void onResponse(retrofit2.Response<unibo.progettotesi.json.busETA.Response> response) {
 				try {
 					if (response.body() != null  && response.code() == 200){
+						//the eta is handled by the calling activity
 						activity.setETA(new unibo.progettotesi.utilities.Time(response.body().result.eta), response.body().result.serial);
 					}
 				}catch (Exception e){
-					//non c'è l'informazione realTime
+					//no realTime information
 					activity.failure();
 				}
 			}
@@ -132,7 +134,6 @@ public class RealTimeTracker {
 
 // LEVA STO SCHIFO!!!!! E ANCHE IL COMMENTO ALL'IF DI SOTTO
 		Calendar calendar = Calendar.getInstance();
-		calendar.add(Calendar.DAY_OF_MONTH, -28);
 		calendar.set(Calendar.HOUR, time.hour);
 		calendar.set(Calendar.MINUTE, time.minute);
 		date.setDay(calendar.get(Calendar.DAY_OF_MONTH));
@@ -151,10 +152,10 @@ public class RealTimeTracker {
 					try{
 						if(response.body() != null && response.code() == 200){
 							boolean found = false;
-					//		if(response.body().trip.tripId.equals(currentLeg.getLine().getTripID())) {
+							//if(response.body().trip.tripId.equals(currentLeg.getLine().getTripID())) {
 								stopToInterStopConverter(response.body().trip.stops);
 								found = true;
-					//		}
+							//}
 							if(!found && !antiLoop){
 								getStopsFromWeb(onTheGoActivity, currentLeg, !first);
 								antiLoop = true;

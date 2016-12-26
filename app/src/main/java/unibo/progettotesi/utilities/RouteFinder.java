@@ -45,9 +45,10 @@ public class RouteFinder {
 	}
 
 	public void getRoutesFromWeb(final SelectRouteActivityB selectRouteActivityB){
-		Retrofit retrofit = new Retrofit.Builder()      //create the retrofit builder
+		//the http call is made here
+		Retrofit retrofit = new Retrofit.Builder()
 				.baseUrl(Constants.PLANNING_BASE_URL)
-				.addConverterFactory(GsonConverterFactory.create())	//parse Gson string
+				.addConverterFactory(GsonConverterFactory.create())
 				.build();
 
 		RequestPlan service = retrofit.create(RequestPlan.class);
@@ -67,6 +68,8 @@ public class RouteFinder {
 		Log.wtf("TIMEOUT", connection.getConnectTimeout() + "\t" + connection.getReadTimeout());
 
 		Call<List<unibo.progettotesi.json.planner.Response>> queryResponseCall;
+
+		//could be now, start time or end time
 		if(departureTime){
 			 queryResponseCall = service.requestPlanDeparture(
 					startPlace.getLocation().getLatitude() + "," + startPlace.getLocation().getLongitude(),
@@ -87,6 +90,7 @@ public class RouteFinder {
 			public void onResponse(retrofit2.Response<List<unibo.progettotesi.json.planner.Response>> response) {
 				try {
 					if (response.body() != null && response.code() == 200){
+						//if a valid response is received, it's parsed in routes
 						convertResponseToRoutes(selectRouteActivityB, response.body());
 						Log.wtf("TEST PLANNING", response.body().get(0).getDuration() + "");
 					}else{
@@ -107,6 +111,7 @@ public class RouteFinder {
 
 	private void convertResponseToRoutes(SelectRouteActivityB selectRouteActivityB, List<Response> responses) {
 		for (int i = 0; i < responses.size(); i++) {
+			//the intelligence to parse into routes is in the Route class
 			Route route = Route.getRouteFromPlanner(responses.get(i));
 			if(route != null)
 				routes.add(route);

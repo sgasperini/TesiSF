@@ -14,49 +14,49 @@
     >
 
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_row="0"
-            android:layout_column="0"
-            android:columnCount="2"
-            android:rowCount="1">
-
-            <ImageButton
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:id="@+id/imageButton3"
-                android:layout_alignTop="@+id/imageButton2"
-                android:layout_alignRight="@+id/imageButton"
-                android:layout_alignEnd="@+id/imageButton"
-                style="?android:attr/borderlessButtonStyle"
-                android:src="@drawable/ic_timeline_black_48dp"
-                android:onClick="profilesManaging"
-                android:scaleType="centerInside"
-                android:adjustViewBounds="false"
-                android:background="#80cbc4"
-                android:contentDescription="Aggiungi profilo"/>
-
-            <ImageButton
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:id="@+id/imageButton2"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                style="?android:attr/borderlessButtonStyle"
-                android:src="@drawable/ic_settings_black_48dp"
-                android:background="#26a69a"
-                android:contextClickable="false"
-                android:contentDescription="Impostazioni"
-                android:onClick="openSettings"/>
-        </LinearLayout>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_row="0"
+        android:layout_column="0"
+        android:columnCount="2"
+        android:rowCount="1">
 
         <ImageButton
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:id="@+id/imageButton3"
+            android:layout_alignTop="@+id/imageButton2"
+            android:layout_alignRight="@+id/imageButton"
+            android:layout_alignEnd="@+id/imageButton"
+            style="?android:attr/borderlessButtonStyle"
+            android:src="@drawable/ic_timeline_black_48dp"
+            android:onClick="profilesManaging"
+            android:scaleType="centerInside"
+            android:adjustViewBounds="false"
+            android:background="#80cbc4"
+            android:contentDescription="Aggiungi profilo"/>
+
+        <ImageButton
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:id="@+id/imageButton2"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            style="?android:attr/borderlessButtonStyle"
+            android:src="@drawable/ic_settings_black_48dp"
+            android:background="#26a69a"
+            android:contextClickable="false"
+            android:contentDescription="Impostazioni"
+            android:onClick="openSettings"/>
+    </LinearLayout>
+
+    <ImageButton
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"

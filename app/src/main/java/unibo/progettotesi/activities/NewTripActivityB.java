@@ -1,6 +1,7 @@
 package unibo.progettotesi.activities;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -47,21 +48,19 @@ public class NewTripActivityB extends AppCompatActivity {
 	private double longitude = 0.0;
 	private LocationManager lm;
 	public static Handler finishHandler;
-	private TextToSpeech tts;
-	private boolean voiceSupport;
+	private static TextToSpeech tts;
+	private static boolean voiceSupport;
 
 	@Override
 	protected void onStart() {
 		super.onStart();
 
+
+		//tries to get the location, gets necessary permissions
 		lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			if (ActivityCompat.shouldShowRequestPermissionRationale(this,
 					Manifest.permission.ACCESS_FINE_LOCATION)) {
-
-				// Show an expanation to the user *asynchronously* -- don't block
-				// this thread waiting for the user's response! After the user
-				// sees the explanation, try again to request the permission.
 
 			} else {
 				ActivityCompat.requestPermissions(this,
@@ -71,10 +70,10 @@ public class NewTripActivityB extends AppCompatActivity {
 		}else{
 			try {
 				Location location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-				/*if (location == null)
-					location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);*/
 				if (location == null)
 					location = lm.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+				/*if (location == null)
+				location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);*/
 				if (location == null) {
 					Toast.makeText(NewTripActivityB.this, "Impossibile ottenere ultima posizione nota", Toast.LENGTH_SHORT).show();
 					return;
@@ -95,15 +94,19 @@ public class NewTripActivityB extends AppCompatActivity {
 				// If request is cancelled, the result arrays are empty.
 				if (grantResults.length > 0
 						&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+					SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+					SharedPreferences.Editor editor = sp.edit();
+					editor.putBoolean("locationPermission", true);
+					editor.commit();
 					try {
 						if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 							return;
 						}
 						Location location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-						/*if(location == null)
-							location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);*/
 						if (location == null)
 							location = lm.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+						/*if(location == null)
+							location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);*/
 						if(location == null){
 							Toast.makeText(NewTripActivityB.this, "Impossibile ottenere ultima posizione nota", Toast.LENGTH_SHORT).show();
 							return;
@@ -119,9 +122,6 @@ public class NewTripActivityB extends AppCompatActivity {
 				}
 				return;
 			}
-
-			// other 'case' lines to check for other
-			// permissions this app might request
 		}
 	}
 
@@ -136,6 +136,7 @@ public class NewTripActivityB extends AppCompatActivity {
 
 		profilesAdapter = new ProfilesAdapter(this, R.layout.profile_b_list, profileList);
 
+		//at the creation of the activity, it sets the adapter for the profiles
 		((ListView) findViewById(R.id.listView2)).setAdapter(profilesAdapter);
 
 		timePickerButton = (Button) findViewById(R.id.buttonTimePicker);
@@ -143,6 +144,7 @@ public class NewTripActivityB extends AppCompatActivity {
 
 		timeOption = (Button) findViewById(R.id.buttonPlanningTime);
 
+		//the timer changes the time for the desired departure or arrival time
 		timer = new CountDownTimer(1000000000, 1000) {
 
 			public void onTick(long millisUntilFinished) {
@@ -197,27 +199,33 @@ public class NewTripActivityB extends AppCompatActivity {
 	}
 
 	public void startSingleTrip(View v){
-		//prendere gps, aprire new profile activity senza gps e poi salvare in currentprofile
+		//when we want to sstart a single trip, we crate a fake profile using new profile, with gps as departure
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission((Activity) this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			if(voiceSupport)
+				if(!VoiceSupport.isTalkBackEnabled(this)){
+					tts.speak("Mancato permesso di accesso alla posizione GPS. Questo puà essere dato nelle impostazioni.", TextToSpeech.QUEUE_FLUSH, null);
+				}
+			Toast.makeText(this, "Mancato permesso di accesso alla posizione GPS.\n Questo puà essere dato nelle impostazioni.", Toast.LENGTH_SHORT).show();
 
-		//prendere gps
+		} else {
+			Intent intent = new Intent(this, NewProfileActivityB.class);
+			intent.putExtra("Start", false);
+			intent.putExtra("GPS", true);
+			intent.putExtra("singleTrip", true);
 
-		Intent intent = new Intent(this, NewProfileActivityB.class);
-		intent.putExtra("Start", false);
-		intent.putExtra("GPS", true);
-		intent.putExtra("singleTrip", true);
+			SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+			editor.putBoolean("departureTime", departureTime);
+			editor.putString("time", timePickerButton.getText().toString());
+			editor.commit();
 
-		SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-		editor.putBoolean("departureTime", departureTime);
-		editor.putString("time", timePickerButton.getText().toString());
-		editor.commit();
+			if (voiceSupport)
+				if (!VoiceSupport.isTalkBackEnabled(this)) {
+					tts.speak("Percorso singolo. GPS, attendere", TextToSpeech.QUEUE_FLUSH, null);
+				}
+			Toast.makeText(this, "Percorso singolo\nGPS, attendere", Toast.LENGTH_SHORT).show();
 
-		if(voiceSupport)
-			if(!VoiceSupport.isTalkBackEnabled(this)){
-				tts.speak("Percorso singolo. GPS, attendere", TextToSpeech.QUEUE_FLUSH, null);
-			}
-		Toast.makeText(this, "Percorso singolo\nGPS, attendere", Toast.LENGTH_SHORT).show();
-
-		startActivity(intent);
+			startActivity(intent);
+		}
 	}
 
 	public void openTimePicker(View v){
@@ -255,29 +263,36 @@ public class NewTripActivityB extends AppCompatActivity {
 		Toast.makeText(this, (departureTime ? "Partenza" : "Arrivo") + " alle: " + timePickerButton.getText().toString(), Toast.LENGTH_SHORT).show();
 	}
 
+	//usual static method we call from the adapter when we select the item
 	public static void selectProfile(NewTripActivityB newTripActivityB, Profile profile){
-		//leggere ad alta voce il nome
-		//conferma
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(newTripActivityB);
 		SharedPreferences.Editor editor = sharedPreferences.edit();
 
 		editor.putString("CurrentProfile", profile.savingString());
 		editor.commit();
 
-		if(newTripActivityB.voiceSupport)
-			if(!VoiceSupport.isTalkBackEnabled(newTripActivityB)){
-				newTripActivityB.tts.speak("Seleziona percorso per: " + profile.getName(), TextToSpeech.QUEUE_FLUSH, null);
-			}
-		//Toast.makeText(newTripActivityB, "Selezionato: " + profile.getName(), Toast.LENGTH_SHORT).show();
+		if (ActivityCompat.checkSelfPermission(newTripActivityB, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission((Activity) newTripActivityB, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			if(voiceSupport)
+				if(!VoiceSupport.isTalkBackEnabled(newTripActivityB)){
+					tts.speak("Mancato permesso di accesso alla posizione GPS. Questo puà essere dato nelle impostazioni.", TextToSpeech.QUEUE_FLUSH, null);
+				}
+			Toast.makeText(newTripActivityB, "Mancato permesso di accesso alla posizione GPS.\n Questo puà essere dato nelle impostazioni.", Toast.LENGTH_SHORT).show();
 
-		Intent intent = new Intent(newTripActivityB, SelectRouteActivityB.class);
+		} else {
 
-		intent.putExtra("departureTime", newTripActivityB.departureTime);
-		intent.putExtra("time", newTripActivityB.timePickerButton.getText().toString());
+			if (newTripActivityB.voiceSupport)
+				if (!VoiceSupport.isTalkBackEnabled(newTripActivityB)) {
+					newTripActivityB.tts.speak("Seleziona percorso per: " + profile.getName(), TextToSpeech.QUEUE_FLUSH, null);
+				}
 
-		newTripActivityB.startActivity(intent);
+			//launching the select route activity with the desired profile and departure/arrival time
+			Intent intent = new Intent(newTripActivityB, SelectRouteActivityB.class);
 
-		//newTripActivityB.finish();
+			intent.putExtra("departureTime", newTripActivityB.departureTime);
+			intent.putExtra("time", newTripActivityB.timePickerButton.getText().toString());
+
+			newTripActivityB.startActivity(intent);
+		}
 	}
 
 	@Override

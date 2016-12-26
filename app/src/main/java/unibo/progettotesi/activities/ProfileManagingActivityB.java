@@ -25,7 +25,7 @@ public class ProfileManagingActivityB extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_profile_managing_activity_b);
 
-		setTitle("Gestione Profili");
+		setTitle("Gestione Profili di Viaggio");
 
 		voiceSupport = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("VoiceSupport", true);
 
@@ -50,6 +50,7 @@ public class ProfileManagingActivityB extends AppCompatActivity {
 		};
 	}
 
+	//create new profile, starting newProfileActivity
 	public void newProfile(View v){
 		Intent intent = new Intent(this, NewProfileActivityB.class);
 		intent.putExtra("Start", true);
@@ -62,6 +63,7 @@ public class ProfileManagingActivityB extends AppCompatActivity {
 		startActivity(intent);
 	}
 
+	//edit profile, starting editDeleteActivity
 	public void editProfile(View v){
 		Intent intent = new Intent(this, EditDeleteActivityB.class);
 		intent.putExtra("Edit", true);
@@ -75,6 +77,7 @@ public class ProfileManagingActivityB extends AppCompatActivity {
 		startActivity(intent);
 	}
 
+	//delete profile, starting editDeleteActivity
 	public void deleteProfile(View v){
 		Intent intent = new Intent(this, EditDeleteActivityB.class);
 

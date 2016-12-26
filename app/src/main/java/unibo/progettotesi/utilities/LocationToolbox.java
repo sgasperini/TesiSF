@@ -69,16 +69,17 @@ public class LocationToolbox extends Service implements LocationListener {
 
 	public Location getLocation() {
 		try {
+			//checks to see if location permissions are already obtained
 			if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+				//if not, asks for them to the user
 				if (ActivityCompat.shouldShowRequestPermissionRationale(activity,
 						Manifest.permission.ACCESS_FINE_LOCATION)) {
 
-					// Show an expanation to the user *asynchronously* -- don't block
-					// this thread waiting for the user's response! After the user
-					// sees the explanation, try again to request the permission.
+					Log.wtf("PERMISSIONS", "User already denied once location permissions");
 
 				} else {
 					Log.wtf("LOCATION", "sto per chiedere i permessi");
+					//the command that actually asks for permission to the user triggering dialog
 					ActivityCompat.requestPermissions(activity,
 							new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
 							Constants.PERMISSION_LOCATION_REQUEST);
@@ -99,8 +100,10 @@ public class LocationToolbox extends Service implements LocationListener {
 			if (!isGPSEnabled && !isNetworkEnabled) {
 				// no network provider is enabled
 				this.showSettingsAlert();
+				//tries again
 				return getLocation();
 			} else {
+				//network provider available, getting location with network
 				this.canGetLocation = true;
 
 				if (isNetworkEnabled) {

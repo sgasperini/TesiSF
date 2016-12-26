@@ -43,11 +43,10 @@ public class FavoritesProfileB extends AppCompatActivity {
 
 		List<Place> placeList = getFavorites();
 
-		//RIEMPI PLACELIST
-
 		favoritesAdapter = new FavoritesAdapter(this, R.layout.favorite_profile_b_list, placeList);
 		favoritesAdapter.setStart(start);
 
+		//set the adapter to fill the list with the favorites
 		((ListView) findViewById(R.id.listView)).setAdapter(favoritesAdapter);
 
 		voiceSupport = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("VoiceSupport", true);
@@ -74,12 +73,13 @@ public class FavoritesProfileB extends AppCompatActivity {
 		return output;
 	}
 
+
+	//usual static method to call from the adapter with the selected favorite place
 	public static void selectFavorite(FavoritesProfileB favoritesProfileB, Place favoritePlace, boolean start){
-		//leggere ad alta voce il nome
-		//conferma
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(favoritesProfileB);
 		SharedPreferences.Editor editor = preferences.edit();
 
+		//if for new profile it saves in the appropriate preference the place
 		if(favoritesProfileB.editProfileN == -1) {
 			if (start)
 				editor.putString("StartTempPlace", favoritePlace.savingString());
@@ -89,6 +89,7 @@ public class FavoritesProfileB extends AppCompatActivity {
 			editor.commit();
 
 			if(!favoritesProfileB.singleTrip) {
+				//handling new profile
 				if (start) {
 					Intent intent = new Intent(favoritesProfileB, NewProfileActivityB.class);
 					intent.putExtra("Start", !start);
@@ -108,12 +109,14 @@ public class FavoritesProfileB extends AppCompatActivity {
 					favoritesProfileB.startActivity(intent);
 					favoritesProfileB.finish();
 				}
-			}else{	//trip singolo
+			}else{
+				//handling single trip
 				NewProfileActivityB.saveSingleTripProfile(favoritesProfileB);
 				favoritesProfileB.finish();
 				NewProfileActivityB.finishHandlerEnd.sendEmptyMessage(0);
 			}
-		}else{	//modifica
+		}else{
+			//if editing profile, sets the new place with the favorite
 			Profile profile = Profile.getProfileFromString(preferences.getString("ProfileN_" + favoritesProfileB.editProfileN, ""));
 			if(favoritesProfileB.departure)
 				profile.setStart(favoritePlace);

@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
@@ -31,6 +32,7 @@ import java.util.Locale;
 
 import unibo.progettotesi.R;
 import unibo.progettotesi.utilities.ActivityRecognitionService;
+import unibo.progettotesi.utilities.AuthenticationHandler;
 import unibo.progettotesi.utilities.VoiceSupport;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -38,8 +40,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 	private String routeS;
 	private String stopS;
 	private TextToSpeech tts;
-	private SharedPreferences sharedPreferences;
-	private SharedPreferences.Editor editor;
+	private static SharedPreferences sharedPreferences;
+	private static SharedPreferences.Editor editor;
 	private boolean voiceSupport;
 	private boolean oldVoiceSupport;
 	private GoogleApiClient apiClient;
@@ -51,6 +53,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 	private boolean calledByOnTheGo;
 	private PendingIntent pendingIntentActivityUpdates;
 	public static Handler finishHandler;
+	private boolean accountCreated;
+	private boolean loggedIn = false;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -59,12 +64,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
 		setTitle("Home");
 
+		//retrieving from preferences information about possible previous failure
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		routeS = sharedPreferences.getString("CurrentRoute", "");
 		stopS = sharedPreferences.getString("LastStop", "");
+		accountCreated = sharedPreferences.getBoolean("accountCreated", false);
+		loggedIn = sharedPreferences.getBoolean("loggedIn", false);
+
 		Log.wtf("CrashDetector route", routeS);
 		Log.wtf("CrashDetector stop", stopS);
 
+		//iF crash detected in otg, lunch OTG with the last known stop, else bus waiting, else stay in main
 		if (!routeS.equals("")) {
 			if (!stopS.equals("")) {
 				Intent intent = new Intent(this, OnTheGoActivity.class);
@@ -76,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 			}
 		}
 
+		//retrieve whether or not voice support should be active
 		voiceSupport = sharedPreferences.getBoolean("VoiceSupport", true);
 		oldVoiceSupport = voiceSupport;
 
@@ -92,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 		editor = sharedPreferences.edit();
 		requestVoiceSetting();
 
+		//apri api e handlers per getire la activity recognition (car, walking etc)
 		apiClient = new GoogleApiClient.Builder(this)
 				.addApi(ActivityRecognition.API)
 				.addConnectionCallbacks(this)
@@ -151,6 +163,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 				newTrip(null);
 			}
 		};*/
+
+		/*
+        //logs in to get permissions for authentication, have to come back on your own after
+        if (!loggedIn) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://dev.smartcommunitylab.it" +
+                    "/aac/eauth/authorize?response_type=token&redirect_uri=https%3A%2F%2Fdev.smartcommunitylab.it" +
+                    "%2Fprofileservice%2Fo2c.html&realm=your-realms&client_id=8b562674-006b-4e87-a2c2-0c4028dac41f" +
+                    "&scope=profile.basicprofile.me%2Cpersonal.mobility.read%2Cpersonal.mobility.write&state=personaloauth2schema"));
+            startActivity(browserIntent);
+            Toast.makeText(MainActivity.this, "Effettua l'accesso con Facebook o Google", Toast.LENGTH_SHORT).show();
+            loggedIn = true;
+            editor.putBoolean("loggedIn", loggedIn);
+            editor.commit();
+        }*/
+
 	}
 
 	@Override
@@ -172,6 +199,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 	}
 
 	private void requestVoiceSetting() {
+		//if the app is opened for the first time, it asks if voice support is wanted with a dialog
 		if(sharedPreferences.getBoolean("FirstAccess", true)) {
 			AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 			if (!VoiceSupport.isTalkBackEnabled(this)) {
@@ -209,7 +237,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 		}
 	}
 
+	//start profiles handling
 	public void profilesManaging(View v){
+		//if the app is opened for the first time, the account is created
+		/*
+		if (!accountCreated)
+			AuthenticationHandler.createAccount();
+		*/
 		Intent intent = new Intent(this, ProfileManagingActivityB.class);
 		//intent.putExtra("Start", true);
 
@@ -221,7 +255,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 		startActivity(intent);
 	}
 
+	//start new trip
 	public void newTrip(View v){
+		//if the app is opened for the first time, the account is created
+		/*
+		if (!accountCreated)
+			AuthenticationHandler.createAccount();
+		*/
 		Intent intent = new Intent(this, NewTripActivityB.class);
 
 		if(!VoiceSupport.isTalkBackEnabled(this))
@@ -233,7 +273,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 		startActivity(intent);
 	}
 
+	//start settings
 	public void openSettings(View v){
+		//if the app is opened for the first time, the account is created
+		/*
+		if (!accountCreated)
+			AuthenticationHandler.createAccount();
+		*/
 		Intent intent = new Intent(this, SettingsActivity.class);
 
 		if(!VoiceSupport.isTalkBackEnabled(this))
@@ -245,6 +291,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 		startActivity(intent);
 	}
 
+	//always shut down text to speech and disconnect from the google api
 	@Override
 	protected void onDestroy() {
 		if(tts !=null){
@@ -252,6 +299,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 			tts.stop();
 			tts.shutdown();
 		}
+		editor.putBoolean("loggedIn", false);
+		editor.commit();
 
 		if(apiClient.isConnected())
 			apiClient.disconnect();
@@ -259,6 +308,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 		super.onDestroy();
 	}
 
+	//launch the recognition activity with 1s updates
 	@Override
 	public void onConnected(@Nullable Bundle bundle) {
 		try {
@@ -294,5 +344,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 		}catch (Exception e){
 			Log.wtf("ACTIVITY RECOGNITION PROBLEM", "rimozione updates" + e.getMessage() + "\n\t\t\t\t\ttipicamente già rimossi");
 		}
+	}
+
+	public static void setAccountCreated(boolean b) {
+		editor = sharedPreferences.edit();
+		editor.putBoolean("accountCreated", b);
 	}
 }

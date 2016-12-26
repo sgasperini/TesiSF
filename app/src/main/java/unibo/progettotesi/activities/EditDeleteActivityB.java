@@ -45,13 +45,10 @@ public class EditDeleteActivityB extends AppCompatActivity {
 		findViewById(R.id.linearLayoutTravelOptions).setVisibility(View.GONE);
 
 		edit = getIntent().getBooleanExtra("Edit", false);
-		/*if(edit)
-			Toast.makeText(EditDeleteActivityB.this, "Modifica", Toast.LENGTH_SHORT).show();
-		else
-			Toast.makeText(EditDeleteActivityB.this, "Elimina", Toast.LENGTH_SHORT).show();*/
 
 		profileList = getProfiles();
 
+		//set the adapter for the profiles to modify
 		profilesAdapter = new ProfilesAdapter(this, R.layout.profile_b_list, profileList, edit);
 
 		((ListView) findViewById(R.id.listView2)).setAdapter(profilesAdapter);
@@ -77,6 +74,7 @@ public class EditDeleteActivityB extends AppCompatActivity {
 		};
 	}
 
+	//get the profiles from the preferences using our string system
 	private List<Profile> getProfiles() {
 		List<Profile> output = new ArrayList<Profile>();
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -92,9 +90,8 @@ public class EditDeleteActivityB extends AppCompatActivity {
 		return profileList;
 	}
 
+	//static method called from the adapter
 	public static void selectProfile(final EditDeleteActivityB editDeleteActivityB, Profile profile, final int position){
-		//leggere ad alta voce il nome
-		//conferma
 		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(editDeleteActivityB);
 		if(editDeleteActivityB.voiceSupport)
 			if(!VoiceSupport.isTalkBackEnabled(editDeleteActivityB)){
@@ -111,6 +108,7 @@ public class EditDeleteActivityB extends AppCompatActivity {
 						SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(editDeleteActivityB);
 						SharedPreferences.Editor editor = sharedPreferences.edit();
 
+						//launches the editing or deleting process
 						if(editDeleteActivityB.edit){
 							Intent intent = new Intent(editDeleteActivityB, EditActivityB.class);
 							intent.putExtra("editProfileN", position + 1);

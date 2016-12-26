@@ -118,7 +118,7 @@
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:id="@+id/getOff_otg"
-        android:src="@drawable/ic_directions_bus_black_48dp"
+        android:src="@drawable/ic_call_received_black_48dp"
         android:onClick="getOff"
         android:background="#00897b"
         android:scaleType="fitCenter"

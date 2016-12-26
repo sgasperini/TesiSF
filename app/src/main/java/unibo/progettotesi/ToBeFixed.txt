@@ -2,9 +2,7 @@ Da sistemare:
 
 - quando aspetti non ti dice quante fermate star su, poi sali e te lo dovrebbe dire
 - quando hai due autobus da prendere e uno parte nel giorno dopo (dopo mezzanotte) sbalena (salvare la data di ogni leg)
-- beta3 di Retrofit.........
 - rilevazione partenza sbagliata o pressione salgo quando già salito da un tot - TESTARE
-- progress bar delle conversioni coodrinate e indirizzo (c'è poco da fare)
 - sei un bus in ritardo, minuti a scendere da orario può negativo (forse risolto)
 
 - dialogo che dica ok per fermare la vibrazione pre discesa - pare ok
@@ -32,7 +30,6 @@ impostazioni:
 possibili aggiunte:
 - detect telefono sul bus/a piedi per evitare la pressione dei tasti "sali" e "scendi" - TESTARE
 - notifica fissa tipo Google Maps quando sei in bus waiting o OTG che dia un paio di info
-- uso profili bilato
-- ordinare profili in base al più probabile o anche a quelli che partono più vicini - fatto coi vicini
+- ordinare profili in base al più probabile o anche a quelli che partono più vicini - fatto coi vicini***
 - comandi vocali
 - aggiunta pulsante percorso immediato quando selezioni il profilo da usare

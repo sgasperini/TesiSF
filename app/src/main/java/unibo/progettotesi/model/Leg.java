@@ -146,7 +146,8 @@ public class Leg {
 		return new Leg(Stop.getStopFromString(stringTokenizer.nextToken()), Stop.getStopFromString(stringTokenizer.nextToken()),
 				Line.getLineFromString(stringTokenizer.nextToken()), Time.getTimeFromString(stringTokenizer.nextToken()),
 				Time.getTimeFromString(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken()),
-				new Date(Integer.parseInt(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken())),
+				new Date(Integer.parseInt(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken()),
+						Integer.parseInt(stringTokenizer.nextToken())),
 				new Date(Integer.parseInt(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken()), Integer.parseInt(stringTokenizer.nextToken())));
 	}
 }

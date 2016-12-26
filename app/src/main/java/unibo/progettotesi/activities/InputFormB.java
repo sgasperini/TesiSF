@@ -43,6 +43,8 @@ public class InputFormB extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_input_form_b);
 
+		//it needs to know where it is in the process, what process it is, if it's a favorite
+		//or a profile, single trip or not
 		start = getIntent().getBooleanExtra("Start", false);
 		gps = getIntent().getBooleanExtra("GPS", false);
 		address = getIntent().getBooleanExtra("Address", false);
@@ -90,6 +92,7 @@ public class InputFormB extends AppCompatActivity {
 	}
 
 	private void setName() {
+		//if not favorite, launches the static method to save the profile with the name inserted
 		if(!favorite) {
 			NewProfileActivityB.saveProfile(this, editText.getText().toString());
 			if(voiceSupport)
@@ -98,6 +101,7 @@ public class InputFormB extends AppCompatActivity {
 				Toast.makeText(InputFormB.this, "Profilo Salvato", Toast.LENGTH_SHORT).show();
 			finish();
 		}else {
+			//if it's favorite, saves among the favorites
 			SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 			SharedPreferences.Editor editor = preferences.edit();
 
@@ -123,13 +127,11 @@ public class InputFormB extends AppCompatActivity {
 		}
 	}
 
-	//set OnKeyListener sull'EditText
-
 	private void setAddress(int cont){
-		//leggerlo ad alta voce, poi controllare che ritorni una posizione reale
+		//tries to find coordinates for the address inserted
 
-		if(addressToCoordinates()) {
-
+		if(addressToCoordinatesBologna()) {
+			//if successful, it saves the location, and then distingueses for single or regular trip
 			if(voiceSupport)
 				tts.speak("Inserito " + editText.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
 
@@ -145,18 +147,21 @@ public class InputFormB extends AppCompatActivity {
 				NewProfileActivityB.finishHandlerEnd.sendEmptyMessage(0);
 			}
 		}else {
-			if (cont < 4)
+			//if not successful, it tries two more times to avoid network problems
+			if (cont < 2)
 				setAddress(cont + 1);
 			else {
+				//if the problems are with the inserted address, it communicates to the user
 				if(!VoiceSupport.isTalkBackEnabled(this))
-					Toast.makeText(InputFormB.this, "Indirizzo non trovato", Toast.LENGTH_SHORT).show();
+					Toast.makeText(InputFormB.this, "Indirizzo non trovato o fuori dall'area supportata.\n Reinserire.", Toast.LENGTH_SHORT).show();
 				if(voiceSupport)
-					tts.speak("Indirizzo non trovato", TextToSpeech.QUEUE_FLUSH, null);
+					tts.speak("Indirizzo non trovato o fuori dall'area supportata. Reinserire.", TextToSpeech.QUEUE_FLUSH, null);
+				editText.setText("");
 			}
 		}
 	}
 
-	private boolean addressToCoordinates() {
+	private boolean addressToCoordinatesBologna() {
 		findViewById(R.id.progressBar_inputForm).setVisibility(View.VISIBLE);
 		findViewById(R.id.inputEditText).setVisibility(View.GONE);
 		findViewById(R.id.confirm).setVisibility(View.GONE);
@@ -168,7 +173,7 @@ public class InputFormB extends AppCompatActivity {
 
 		try {
 			address = coder.getFromLocationName(editText.getText().toString(), 1);
-			if (address == null) {
+			if (address == null || address.size()==0) {
 				result = false;
 			}
 			Address location = address.get(0);
@@ -179,7 +184,12 @@ public class InputFormB extends AppCompatActivity {
 			longitude = location.getLongitude();
 
 			Log.wtf("COORDINATES FROM ADDRESS", latitude + " - " + longitude);
-			result = true;
+			if (addressInBologna(latitude, longitude)){
+				result = true;
+			} else
+				result = false;
+
+
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			result = false;
@@ -191,6 +201,11 @@ public class InputFormB extends AppCompatActivity {
 		findViewById(R.id.confirm).setClickable(true);
 
 		return result;
+	}
+
+	private boolean addressInBologna(double latitude, double longitude) {
+		return ((latitude>=44.252448 && latitude<=44.609696) &&
+				(longitude>=11.017831 && longitude<=11.900342));
 	}
 
 	private void saveLocation() {
@@ -236,6 +251,7 @@ public class InputFormB extends AppCompatActivity {
 		alertDialog.show();
 	}
 
+	//it can start itself if it needs to save the name of the profile or the name of a favorite if wanted by the user
 	private void startThisName(boolean forFavorite) {
 		Intent intent = new Intent(this, InputFormB.class);
 		intent.putExtra("Start", start);

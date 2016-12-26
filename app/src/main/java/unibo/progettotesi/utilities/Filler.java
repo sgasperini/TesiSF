@@ -21,8 +21,6 @@ public class Filler {
 		TextView lines = (TextView) view.findViewById(R.id.lines_route);
 		TextView walking = (TextView) view.findViewById(R.id.walking_route);
 
-		//RelativeLayout relativeLayout = (RelativeLayout) view/*.findViewById(R.id.layout_route)*/;
-
 		view.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
