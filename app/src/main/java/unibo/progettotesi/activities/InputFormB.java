@@ -173,9 +173,6 @@ public class InputFormB extends AppCompatActivity {
 
 		try {
 			address = coder.getFromLocationName(editText.getText().toString(), 1);
-			if (address == null || address.size()==0) {
-				result = false;
-			}
 			Address location = address.get(0);
 			location.getLatitude();
 			location.getLongitude();
@@ -184,7 +181,7 @@ public class InputFormB extends AppCompatActivity {
 			longitude = location.getLongitude();
 
 			Log.wtf("COORDINATES FROM ADDRESS", latitude + " - " + longitude);
-			if (addressInBologna(latitude, longitude)){
+			if (addressInBologna(latitude, longitude) && address != null && address.size()!=0){
 				result = true;
 			} else
 				result = false;
